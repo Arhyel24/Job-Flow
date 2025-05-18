@@ -1,22 +1,19 @@
 import React from 'react';
-import { Platform } from 'react-native';
 import { Portal, Dialog, Text, Button } from 'react-native-paper';
 import { useTheme } from '../context/themeContext';
 
-interface DeleteAccountDialogProps {
+interface LogoutDialogProps {
   visible: boolean;
   onDismiss: () => void;
   onConfirm: () => void;
 }
 
-export default function DeleteAccountDialog({
+export default function DeleteJobDialogue({
   visible,
   onDismiss,
   onConfirm,
-}: DeleteAccountDialogProps){
+}: LogoutDialogProps) {
   const { theme } = useTheme();
-
-  if (Platform.OS === 'web') return null;
 
   return (
     <Portal>
@@ -26,18 +23,18 @@ export default function DeleteAccountDialog({
         style={{ backgroundColor: theme.card }}
       >
         <Dialog.Title style={{ color: theme.text.primary }}>
-          Delete Account
+            Delete Application
         </Dialog.Title>
         <Dialog.Content>
           <Text variant="bodyMedium" style={{ color: theme.text.secondary }}>
-            Are you sure you want to permanently delete your account? This action cannot be undone.
+            Are you sure you want to delete this job application? This cannot be undone.
           </Text>
         </Dialog.Content>
         <Dialog.Actions>
           <Button onPress={onDismiss} textColor={theme.text.secondary}>
             Cancel
           </Button>
-          <Button onPress={onConfirm} textColor={theme.error}>
+          <Button onPress={onConfirm} textColor={theme.primary}>
             Delete
           </Button>
         </Dialog.Actions>

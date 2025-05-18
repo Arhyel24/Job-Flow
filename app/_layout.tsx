@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import { AuthProvider, useAuth } from '../context/authContext';
+import { AuthProvider } from '../context/authContext';
 import { useFrameworkReady } from '../hooks/useFrameworkReady';
 import { useFonts, Inter_400Regular, Inter_500Medium, Inter_700Bold } from '@expo-google-fonts/inter';
 import { startSyncService, stopSyncService } from '../utils/storage';
-import { ThemeProvider } from '../context/themeContext';
-import { View, ActivityIndicator } from 'react-native';
+import { ThemeProvider, useTheme } from '../context/themeContext';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Provider } from 'react-native-paper';
 import ThemedToast from '../utils/toast';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import * as SystemUI from "expo-system-ui"
+import { JobsProvider } from '../context/jobContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -56,13 +59,14 @@ export default function RootLayout() {
     <Provider>
     <AuthProvider>
         <ThemeProvider>
+          <JobsProvider>
         {showOnboarding ? (
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="onboarding" />
           </Stack>
         ) : (
           <AppInitializer />
-        )}
+        )}</JobsProvider>
         <ThemedToast />
       </ThemeProvider>
       </AuthProvider>
@@ -71,8 +75,7 @@ export default function RootLayout() {
 }
 
 function AppInitializer() {
-  const { isLoggedIn, isLoading } = useAuth(); 
-  const router = useRouter();
+  const { theme, isDarkMode } = useTheme()
 
   useEffect(() => {
     startSyncService();
@@ -80,31 +83,26 @@ function AppInitializer() {
   }, []);
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!isLoggedIn) {
-        router.replace('/(auth)/sign-in');
-      } else {
-        router.replace('/(tabs)/jobs');
-      }
-    }
-  }, [isLoggedIn, isLoading]);
-
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
+    SystemUI.setBackgroundColorAsync(theme.background)
+  },[theme])
 
   return (
     <>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
+      <SafeAreaProvider>
+          <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
+            <StatusBar backgroundColor={theme.background} style={isDarkMode ? "dark" : "light"} />
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="+not-found" />
+              </Stack>
+          </SafeAreaView>
+        </SafeAreaProvider>
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+});

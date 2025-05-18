@@ -32,17 +32,27 @@ export default {
   slug: "job-flow",
   version: "1.0.0",
   orientation: "portrait",
-  icon: "./assets/images/icon.png",
+  icon: "./assets/icons/adaptive-icon.png",
   scheme: "jobflow",
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
   ios: {
     supportsTablet: true,
     bundleIdentifier: getUniqueIdentifier(),
+    config: {
+      useNonExemptEncryption: false
+    },
+    icons: {
+      dark: "./assets/icons/ios-dark.png",
+      light: "./assets/icons/ios-light.png",
+      tinted: "./assets/icons/ios-tinted.png",
+      backgroundColor: "#ffffff"
+    }
   },
   android: {
     adaptiveIcon: {
-      foregroundImage: "./assets/images/adaptive-icon.png",
+      foregroundImage: "./assets/icons/adaptive-icon.png",
+      monochromeImage: "./assets/icons/adaptive-icon.png",
       backgroundColor: "#ffffff",
     },
     package: getUniqueIdentifier(),
@@ -50,9 +60,23 @@ export default {
   web: {
     bundler: "metro",
     output: "static",
-    favicon: "./assets/images/favicon.png",
+    favicon: "./assets/icons/adaptive-icon.png",
   },
-  plugins: ["expo-router"],
+  plugins: ["expo-router",
+    [
+      "expo-splash-screen",
+      {
+        image: "./assets/icons/splash-icon-light.png",
+        imageWidth: 200,
+        resizeMode: "contain",
+        backgroundColor: "#ffffff",
+        dark: {
+          image: "./assets/icons/splash-icon-dark.png",
+          backgroundColor: "#000",
+        }
+      }
+    ]
+  ],
   experiments: {
     typedRoutes: true,
   },
@@ -61,8 +85,8 @@ export default {
       origin: false,
     },
     eas: {
-      projectId: "ed990a74-4480-4950-9e4d-d85741e60bec",
-    },
+        "projectId": "1a3825d8-ddde-4e78-9295-89856a50e31c"
+      },
     // googleWebClientId: process.env.GOOGLE_WEB_CLIENT_ID,
     // googleIosClientId: process.env.GOOGLE_IOS_CLIENT_ID,
     googleAndroidClientId: process.env.GOOGLE_ANDROID_CLIENT_ID,

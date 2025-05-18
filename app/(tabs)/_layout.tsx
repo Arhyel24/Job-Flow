@@ -4,62 +4,55 @@ import { Home, Briefcase, FileText, Settings } from 'lucide-react-native';
 import { useTheme } from '../../context/themeContext';
 import { useAuth } from '../../context/authContext';
 import { ThemeColors } from '../../constants/colors';
+import { StatusBar } from 'expo-status-bar';
 
 export default function TabLayout() {
-  const { theme } = useTheme();
+  const { theme, isDarkMode } = useTheme();
   const styles = createStyles(theme);
 
-  
-  const { isLoggedIn, isLoading } = useAuth()
-
-  if (isLoading) {
-		return null;
-	}
-  
-  if (!isLoggedIn) {
-    return <Redirect href="/(auth)/sign-up" />;
-  }
-
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: theme.primary,
-        tabBarInactiveTintColor: theme.text.secondary,
-        tabBarStyle: styles.tabBar,
-        tabBarLabelStyle: styles.tabBarLabel,
-        headerShown: false,
-        tabBarShowLabel: true,
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Dashboard',
-          tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
+    <>
+      <StatusBar backgroundColor={theme.background} style={isDarkMode ? "dark" : "light"} />
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: theme.primary,
+          tabBarInactiveTintColor: theme.text.secondary,
+          tabBarStyle: styles.tabBar,
+          tabBarLabelStyle: styles.tabBarLabel,
+          headerShown: false,
+          tabBarShowLabel: true,
         }}
-      />
-      <Tabs.Screen
-        name="jobs"
-        options={{
-          title: 'Applications',
-          tabBarIcon: ({ color, size }) => <Briefcase color={color} size={size} />,
-        }}
-      />
-      <Tabs.Screen
-        name="documents"
-        options={{
-          title: 'Documents',
-          tabBarIcon: ({ color, size }) => <FileText color={color} size={size} />,
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Settings',
-          tabBarIcon: ({ color, size }) => <Settings color={color} size={size} />,
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Dashboard',
+            tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
+          }}
+        />
+        <Tabs.Screen
+          name="jobs"
+          options={{
+            title: 'Applications',
+            tabBarIcon: ({ color, size }) => <Briefcase color={color} size={size} />,
+          }}
+        />
+        <Tabs.Screen
+          name="documents"
+          options={{
+            title: 'Documents',
+            tabBarIcon: ({ color, size }) => <FileText color={color} size={size} />,
+          }}
+        />
+        <Tabs.Screen
+          name="settings"
+          options={{
+            title: 'Settings',
+            tabBarIcon: ({ color, size }) => <Settings color={color} size={size} />,
+          }}
+        />
+      </Tabs>
+    </>
   );
 }
 

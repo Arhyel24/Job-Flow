@@ -6,13 +6,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Text from '../../../components/ui/Text';
 import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
-import StatusPill from '../../../components/jobs/StatusPill'; // Updated component
-import { getJobs, updateJob, deleteJob } from '../../../utils/storage';
+import StatusPill from '../../../components/jobs/StatusPill';
+import { updateJob } from '../../../utils/storage';
 import { JobApplication } from '../../../types/jobs';
 import { useTheme } from '../../../context/themeContext';
 import { Building2, MapPin, DollarSign, Calendar, Globe, Mail, User, Clock, Edit, Trash, ChevronRight } from 'lucide-react-native';
 import StatusSelector from '../../../components/jobs/StatusSelector'; 
 import { ThemeColors } from '../../../constants/colors';
+import DeleteJobDialogue from '../../../components/DeleteJobModal';
+import Toast from 'react-native-toast-message';
+import { useJobs } from '../../../context/jobContext';
 
 export default function JobDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -21,11 +24,12 @@ export default function JobDetails() {
   const [loading, setLoading] = useState(true);
   const { theme } = useTheme();
   const styles = createStyles(theme);
+  const [deleteJobModalVisible, setDeleteJobModalVisible] = useState<boolean>(false)
+  const { handleDeleteJob, jobs, handleUpdateJob } = useJobs()
 
   useEffect(() => {
     const loadJob = async () => {
       try {
-        const jobs = await getJobs();
         const foundJob = jobs.find(j => j.id === id);
         if (foundJob) {
           setJob(foundJob);
@@ -42,30 +46,10 @@ export default function JobDetails() {
     loadJob();
   }, [id, router]);
 
-  const handleDeleteJob = async () => {
-    Alert.alert(
-      'Delete Application',
-      'Are you sure you want to delete this job application? This cannot be undone.',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteJob(id as string);
-              router.back();
-            } catch (error) {
-              console.error('Error deleting job:', error);
-              Alert.alert('Error', 'Failed to delete job application');
-            }
-          },
-        },
-      ]
-    );
+
+
+  const handleDeleteJobButton = async () => {
+    await handleDeleteJob(id as string).finally(() => router.back())
   };
 
   const handleUpdateStatus = async (newStatus: JobApplication['status']) => {
@@ -73,7 +57,7 @@ export default function JobDetails() {
     
     try {
       const updatedJob = { ...job, status: newStatus };
-      await updateJob(updatedJob);
+      await handleUpdateJob(updatedJob);
       setJob(updatedJob);
     } catch (error) {
       console.error('Error updating job status:', error);
@@ -82,7 +66,12 @@ export default function JobDetails() {
   };
 
   const handleEditJob = () => {
-    router.push(`/jobs/edit/${id}`);
+    // router.push(`/jobs/edit/${id}`);
+    Toast.show({
+      type: "info",
+      text1: "Not Available",
+      text2: "This feature is coming soon!"
+    })
   };
 
   const handleOpenURL = (url?: string) => {
@@ -236,10 +225,11 @@ export default function JobDetails() {
             color={theme.error}
             leftIcon={<Trash size={18} color={theme.error} />}
             style={[styles.actionButton, styles.deleteButton]}
-            onPress={handleDeleteJob}
+            onPress={() => setDeleteJobModalVisible(true)}
           />
         </View>
       </ScrollView>
+      <DeleteJobDialogue visible={ deleteJobModalVisible } onDismiss={() => setDeleteJobModalVisible(false)} onConfirm={handleDeleteJobButton}/>
     </SafeAreaView>
   );
 }

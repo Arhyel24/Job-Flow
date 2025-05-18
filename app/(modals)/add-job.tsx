@@ -7,8 +7,8 @@ import Input from '../../components/ui/Input';
 import Text from '../../components/ui/Text';
 import Button from '../../components/ui/Button';
 import { useTheme } from '../../context/themeContext';
-import { addJob, createJob } from '../../utils/storage';
-import { JobStatus, jobStatusEnum } from '../../constants/jobStatus';
+import { createJob } from '../../utils/storage';
+import { jobStatusEnum } from '../../constants/jobStatus';
 import {
   Building2, BriefcaseIcon, MapPin, DollarSign, Calendar, Globe, User, Mail,
 } from 'lucide-react-native';
@@ -17,6 +17,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
 import { Picker } from '@react-native-picker/picker';
 import { ThemeColors } from '../../constants/colors';
+import { useJobs } from '../../context/jobContext';
 
 const jobSchema = z.object({
   company: z.string().min(1, 'Company name is required'),
@@ -37,6 +38,7 @@ export default function NewJobModal() {
   const { theme } = useTheme();
   const router = useRouter();
   const styles = createStyles(theme);
+  const {addJobFromContext} = useJobs()
 
   const {
     control,
@@ -81,7 +83,7 @@ const dateAppliedValue = rawDateApplied ? new Date(rawDateApplied) : new Date();
         dateApplied: new Date(values.dateApplied).toISOString(),
       });
       
-      await addJob(newJob);
+      await addJobFromContext(newJob);
       router.back();
     } catch (err) {
       console.error('Failed to save job:', err);

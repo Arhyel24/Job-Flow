@@ -1,194 +1,145 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { supabase } from "../utils/supabase";
-import { Alert } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as SecureStore from 'expo-secure-store';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import * as SecureStorage from "expo-secure-store";
+import * as AuthSession from "expo-auth-session";
+import getAccessToken from "../utils/token";
 
-export type User = {
-  id: string;
+export type GoogleUser = {
+  sub: string;
   name: string;
   email: string;
-  photoURL: string;
-  walletAddress: string;
-  about: string;
+  picture: string;
 };
 
 type AuthContextType = {
-  user: User | null;
-  isLoggedIn: boolean;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<{ error?: Error }>;
-  logout: () => Promise<void>;
-  deleteAccount: () => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<{ error?: Error }>;
+  user: GoogleUser | null;
+  loading: boolean;
+  signIn: () => Promise<void>;
+  signOut: () => Promise<void>;
+  accessToken: string | null;
 };
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const CLIENT_ID = process.env.GOOGLE_ANDROID_CLIENT_ID!;
+
+const discovery = {
+  authorizationEndpoint: "",
+  tokenEndpoint: "",
+  revocationEndpoint: ""
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [user, setUser] = useState<GoogleUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
-  // Check if user is logged in on initial load
+  const [request, response, promptAsync] = AuthSession.useAuthRequest(
+    {
+      clientId: CLIENT_ID,
+      scopes: [
+        "openid",
+        "profile",
+        "email",
+        "https://www.googleapis.com/auth/drive.appdata"
+      ],
+      redirectUri: AuthSession.makeRedirectUri(),
+    },
+    discovery
+  );
+
+  // 🔧 FIXED: Immediate call of the async function
   useEffect(() => {
-    const checkAuth = async () => {
+    const loadUser = async () => {
       try {
-        setIsLoading(true);
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const token = await getAccessToken()
+        const userJson = await SecureStorage.getItemAsync("user");
 
-        if (error) throw error;
-
-        if (session?.user) {
-          await fetchUserProfile(session.user.id);
-          setIsLoggedIn(true);
+        if (token && userJson) {
+          setAccessToken(token);
+          setUser(JSON.parse(userJson));
         }
-      } catch (error) {
-        console.error("Auth check error:", error);
+      } catch (e) {
+        console.error("Failed to load user:", e);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    checkAuth();
-
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        await fetchUserProfile(session.user.id);
-        setIsLoggedIn(true);
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setIsLoggedIn(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    loadUser();
   }, []);
 
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+  useEffect(() => {
+    if (response?.type === "success") {
+      const handleAuth = async () => {
+        setLoading(true);
+        try {
+          const { code } = response.params;
 
-      if (error) throw error;
-      if (data) setUser(data as User);
-    } catch (error) {
-      console.error("Failed to fetch user profile:", error);
-    }
-  };
+          const tokenResult = await AuthSession.exchangeCodeAsync(
+            {
+              clientId: CLIENT_ID,
+              code,
+              redirectUri: AuthSession.makeRedirectUri(),
+              extraParams: {
+                code_verifier: request?.codeVerifier!,
+              },
+            },
+            discovery
+          );
 
-  const login = async (email: string, password: string) => {
-    try {
-      setIsLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+          const token = tokenResult.accessToken;
+          setAccessToken(token);
+          await SecureStorage.setItemAsync("access_token", token);
 
-      if (error) throw error;
-
-      return { error: undefined };
-    } catch (error) {
-      console.error("Login error:", error);
-      return { error: error as Error };
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const deleteAccount = async () => {
-              try {
-                const user = supabase.auth.getUser();
-                const { data, error } = await user;
-    
-                if (error || !data?.user) {
-                  Alert.alert('Error', 'Unable to retrieve user session.');
-                  return;
-                }
-    
-                const deleteRes = await supabase.auth.admin.deleteUser(data.user.id);
-    
-                if (deleteRes.error) {
-                  Alert.alert('Error', deleteRes.error.message);
-                  return;
-                }
-                await AsyncStorage.clear();
-                await SecureStore.deleteItemAsync('userToken');
-  
-                supabase.auth.signOut();
-    
-                Alert.alert('Account Deleted', 'Your account has been deleted successfully.');
-              } catch (err) {
-                Alert.alert('Error', 'An unexpected error occurred.');
-                console.error('Delete error:', err);
-              }
+          const userInfoRes = await fetch(
+            "https://www.googleapis.com/oauth2/v3/userinfo",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
             }
+          );
 
-  const register = async (email: string, password: string, name: string) => {
+          const userInfo: GoogleUser = await userInfoRes.json();
+          setUser(userInfo);
+          await SecureStorage.setItemAsync("user", JSON.stringify(userInfo));
+        } catch (e) {
+          console.error("Auth Error:", e);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      handleAuth();
+    }
+  }, [response]);
+
+  const signIn = async () => {
+    setLoading(true);
     try {
-      setIsLoading(true);
-      const { data: { user }, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      if (user) {
-        // Create user profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: user.id,
-            name,
-            email,
-            photoURL: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}`,
-            about: '' // Initialize empty
-          });
-
-        if (profileError) throw profileError;
-      }
-
-      return { error: undefined };
-    } catch (error) {
-      console.error("Registration error:", error);
-      return { error: error as Error };
-    } finally {
-      setIsLoading(false);
+      await promptAsync();
+    } catch (e) {
+      console.error("Sign-in error:", e);
+      setLoading(false);
     }
   };
 
-  const logout = async () => {
+  const signOut = async () => {
+    setLoading(true);
     try {
-      setIsLoading(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
       setUser(null);
-      setIsLoggedIn(false);
-    } catch (error) {
-      console.error("Logout error:", error);
+      setAccessToken(null);
+      await SecureStorage.deleteItemAsync("access_token");
+      await SecureStorage.deleteItemAsync("user");
+    } catch (e) {
+      console.error("Sign-out error:", e);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
-        isLoggedIn, 
-        isLoading, 
-        login, 
-        logout,
-        deleteAccount,
-        register 
-      }}
-    >
+    <AuthContext.Provider value={{ user, loading, signIn, signOut, accessToken }}>
       {children}
     </AuthContext.Provider>
   );

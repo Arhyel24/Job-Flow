@@ -25,8 +25,8 @@ const slides = [
   },
   {
     id: '3',
-    title: 'Try free for 5 days. Then keep your data.',
-    description: 'Experience all premium features free for 5 days',
+    title: 'Get Notified on your job applications.',
+    description: 'Never miss to check on your job applications and have fun',
     icon: <Timer size={80} color={colors.primary} />,
   },
 ];
@@ -67,7 +67,7 @@ export default function Onboarding() {
       setCurrentIndex(currentIndex + 1);
     } else {
       await completeOnboarding()
-      router.replace('/(auth)/sign-up');
+      router.replace('/(tabs)/jobs');
     }
   };
 
@@ -107,7 +107,7 @@ export default function Onboarding() {
 
         {currentIndex < slides.length - 1 && (
           <TouchableOpacity
-            onPress={() => router.replace('/(auth)/sign-up')}
+            onPress={() => router.replace('/(tabs)/jobs')}
             style={styles.skipButton}
           >
             <Text color="secondary">Skip</Text>

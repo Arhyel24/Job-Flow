@@ -7,7 +7,6 @@ import Text from '../../components/ui/Text';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { useTheme } from '../../context/themeContext';
-import PremiumModal from '../../components/premium/PremiumModal';
 import { ThemeColors } from '../../constants/colors';
 import { useRouter } from 'expo-router';
 
@@ -24,38 +23,29 @@ const DOCUMENT_TYPES = [
     id: 'resume',
     title: 'Upload Resume (PDF)',
     description: 'Store your resume for this application',
-    icon: FileUp,
-    premium: true
+    icon: FileUp
   },
   {
     id: 'cover-letter',
     title: 'Cover Letter',
     description: 'Attach or generate a cover letter',
-    icon: FileText,
-    premium: true
+    icon: FileText
   },
   {
     id: 'job-description',
     title: 'Job Description',
     description: 'Screenshot or PDF of job posting',
-    icon: FileImage,
-    premium: false
+    icon: FileImage
   }
 ];
 
 export default function DocumentsScreen() {
   const { theme } = useTheme();
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [isPremium] = useState(false); // TODO: Replace with actual premium status check
   const styles = createStyles(theme);
   const router = useRouter()
 
   const handleDocumentPick = async (type: string) => {
-    if (DOCUMENT_TYPES.find(t => t.id === type)?.premium && !isPremium) {
-      router.push("/(modals)/premium")
-      return;
-    }
-
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ['application/pdf', 'image/*'],
@@ -106,7 +96,6 @@ export default function DocumentsScreen() {
               key={docType.id}
               style={styles.documentTypeCard}
               onPress={() => handleDocumentPick(docType.id)}
-              disabled={docType.premium && !isPremium}
             >
               <View style={styles.documentTypeContent}>
                 <docType.icon size={24} color={theme.primary} />
@@ -116,9 +105,6 @@ export default function DocumentsScreen() {
                     {docType.description}
                   </Text>
                 </View>
-                {docType.premium && !isPremium && (
-                  <Lock size={16} color={theme.text.secondary} />
-                )}
               </View>
             </TouchableOpacity>
           ))}
@@ -161,18 +147,14 @@ export default function DocumentsScreen() {
           <Card variant="elevated" style={styles.emptyState}>
             <Lock size={48} color={theme.text.secondary} />
             <Text variant="h3" weight="bold" style={styles.emptyTitle}>
-              {isPremium ? 'No Documents Yet' : 'Premium Feature'}
+              No Documents Yet
             </Text>
             <Text color="secondary" align="center">
-              {isPremium 
-                ? 'Upload your first document to get started'
-                : 'Upgrade to Premium to store and manage your documents'}
+              Upload your first document to get started
             </Text>
             <Button
-              title={isPremium ? "Upload Document" : "Upgrade to Premium"}
-              onPress={isPremium 
-                ? () => handleDocumentPick('resume') 
-                : () => router.push("/(modals)/premium")}
+              title="Upload Document"
+              onPress={() => handleDocumentPick('resume')}
               style={styles.ctaButton}
             />
           </Card>

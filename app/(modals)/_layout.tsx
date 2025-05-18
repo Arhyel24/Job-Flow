@@ -5,12 +5,12 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native';
 
 export default function ModalLayout() {
-  const { theme } = useTheme();
+  const { theme, isDarkMode } = useTheme();
 
   return (
     <SafeAreaProvider>
       <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
-        <StatusBar backgroundColor={theme.background} style="light" />
+        <StatusBar backgroundColor={theme.background} style={isDarkMode ? "dark" : "light"} /> 
         <Stack
           screenOptions={{
             presentation: 'modal',
@@ -32,7 +32,6 @@ export default function ModalLayout() {
           <Stack.Screen name="backup" options={{ title: 'Backup to Google' }} />
           <Stack.Screen name="restore" options={{ title: 'Restore Google Backup' }} />
           <Stack.Screen name="job" options={{ title: 'View Job' }} />
-          <Stack.Screen name="premium" options={{ title: 'Pay for Premium' }} />
           <Stack.Screen name="feature-request" options={{ title: 'Request Feature' }} />
         </Stack>
       </SafeAreaView>

@@ -10,33 +10,23 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, RelativePathString, useRouter } from 'expo-router';
 import { Plus, Search } from 'lucide-react-native';
-import Text from '../../../components/ui/Text';
-import Button from '../../../components/ui/Button';
-import JobCard from '../../../components/jobs/JobCard';
-import EmptyState from '../../../components/EmptyState';
-import { JobApplication } from '../../../types/jobs';
-import { getJobs } from '../../../utils/storage';
-import { searchJobs } from '../../../utils/jobUtils';
-import { useTheme } from '../../../context/themeContext';
+import Text from '../../components/ui/Text';
+import JobCard from '../../components/jobs/JobCard';
+import EmptyState from '../../components/EmptyState';
+import { JobApplication } from '../../types/jobs';
+import { searchJobs } from '../../utils/jobUtils';
+import { useTheme } from '../../context/themeContext';
+import { useJobs } from '../../context/jobContext';
+import { ThemeColors } from '../../constants/colors';
 
 const JobsScreen = () => {
   const router = useRouter();
-  const { theme: colors } = useTheme();
+  const { theme } = useTheme();
 
-  const [jobs, setJobs] = useState<JobApplication[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<JobApplication[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-
-  const loadJobs = async () => {
-    const loadedJobs = await getJobs();
-    setJobs(loadedJobs);
-    setFilteredJobs(loadedJobs);
-  };
-
-  useEffect(() => {
-    loadJobs();
-  }, []);
+  const { jobs, refreshJobs } = useJobs();
 
   useEffect(() => {
     if (searchQuery.trim()) {
@@ -48,7 +38,7 @@ const JobsScreen = () => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadJobs();
+    await refreshJobs();
     setRefreshing(false);
   };
 
@@ -60,63 +50,7 @@ const JobsScreen = () => {
     router.push(`/(modals)/job/${job.id}` as RelativePathString)
   };
 
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginTop: 8,
-      paddingHorizontal: 16,
-    },
-    searchContainer: {
-      paddingHorizontal: 16,
-      marginVertical: 16,
-    },
-    searchInputContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.card,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: colors.border,
-      paddingHorizontal: 12,
-    },
-    searchIcon: {
-      marginRight: 8,
-    },
-    searchInput: {
-      flex: 1,
-      height: 44,
-      color: colors.text.primary,
-      fontFamily: 'Inter-Regular',
-      fontSize: 16,
-    },
-    listContent: {
-      paddingHorizontal: 16,
-      paddingBottom: 120,
-      flexGrow: 1,
-    },
-    fab: {
-      position: 'absolute',
-      bottom: 24,
-      right: 24,
-      width: 56,
-      height: 56,
-      borderRadius: 28,
-      backgroundColor: colors.primary,
-      justifyContent: 'center',
-      alignItems: 'center',
-      elevation: 4,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.25,
-      shadowRadius: 4,
-    },
-  });
+  const styles = createStyles(theme)
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -128,11 +62,11 @@ const JobsScreen = () => {
 
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
-          <Search size={20} color={colors.text.secondary} style={styles.searchIcon} />
+          <Search size={20} color={theme.text.secondary} style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search jobs..."
-            placeholderTextColor={colors.text.placeholder}
+            placeholderTextColor={theme.text.placeholder}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -171,5 +105,65 @@ const JobsScreen = () => {
     </SafeAreaView>
   );
 };
+
+const createStyles = (theme: ThemeColors) => {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: 8,
+      paddingHorizontal: 16,
+    },
+    searchContainer: {
+      paddingHorizontal: 16,
+      marginVertical: 16,
+    },
+    searchInputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.card,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+      paddingHorizontal: 12,
+    },
+    searchIcon: {
+      marginRight: 8,
+    },
+    searchInput: {
+      flex: 1,
+      height: 44,
+      color: theme.text.primary,
+      fontFamily: 'Inter-Regular',
+      fontSize: 16,
+    },
+    listContent: {
+      paddingHorizontal: 16,
+      paddingBottom: 120,
+      flexGrow: 1,
+    },
+    fab: {
+      position: 'absolute',
+      bottom: 24,
+      right: 24,
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: theme.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+    },
+  });
+}
 
 export default JobsScreen;

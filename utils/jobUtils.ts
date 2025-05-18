@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import { JobApplication } from '../types/jobs';
 import { JobStatus } from '../constants/jobStatus';
 

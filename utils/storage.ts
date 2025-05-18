@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supabase } from './supabase';
 import { JobApplication } from '../types/jobs';
 import uuid from 'react-native-uuid';
 
@@ -13,7 +12,6 @@ export function createJob(jobData: Omit<JobApplication, 'id'>): JobApplication {
     id: uuid.v4().toString(),
     ...jobData,
   };
-  
 }
 
 interface PendingChange {
@@ -59,46 +57,6 @@ async function setPendingChanges(changes: PendingChange[]): Promise<void> {
   }
 }
 
-// Sync functions
-async function syncWithServer(): Promise<void> {
-  try {
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) return;
-
-    const pendingChanges = await getPendingChanges();
-
-    for (const change of pendingChanges) {
-      switch (change.type) {
-        case 'create':
-          await supabase.from('jobs').insert(change.job);
-          break;
-        case 'update':
-          await supabase.from('jobs').update(change.job).eq('id', change.job.id);
-          break;
-        case 'delete':
-          await supabase.from('jobs').delete().eq('id', change.job.id);
-          break;
-      }
-    }
-
-    await setPendingChanges([]);
-
-    const { data: serverJobs, error } = await supabase
-      .from('jobs')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    await setLocalJobs(serverJobs);
-    await AsyncStorage.setItem(LAST_SYNC_KEY, new Date().toISOString());
-  } catch (error) {
-    console.error('Error syncing with server:', error);
-    throw error;
-  }
-}
-
-
 // Public API
 export async function getJobs(): Promise<JobApplication[]> {
   return await getLocalJobs();
@@ -106,12 +64,10 @@ export async function getJobs(): Promise<JobApplication[]> {
 
 export async function addJob(job: JobApplication): Promise<void> {
   try {
-    // Add to local storage
     const jobs = await getLocalJobs();
     const updatedJobs = [...jobs, job];
     await setLocalJobs(updatedJobs);
 
-    // Add to pending changes
     const pendingChanges = await getPendingChanges();
     pendingChanges.push({
       type: 'create',
@@ -119,13 +75,6 @@ export async function addJob(job: JobApplication): Promise<void> {
       timestamp: Date.now(),
     });
     await setPendingChanges(pendingChanges);
-
-    // Try to sync if online
-    try {
-      await syncWithServer();
-    } catch (error) {
-      console.log('Will sync later:', error);
-    }
   } catch (error) {
     console.error('Error adding job:', error);
     throw error;
@@ -134,12 +83,10 @@ export async function addJob(job: JobApplication): Promise<void> {
 
 export async function updateJob(job: JobApplication): Promise<void> {
   try {
-    // Update local storage
     const jobs = await getLocalJobs();
     const updatedJobs = jobs.map(j => j.id === job.id ? job : j);
     await setLocalJobs(updatedJobs);
 
-    // Add to pending changes
     const pendingChanges = await getPendingChanges();
     pendingChanges.push({
       type: 'update',
@@ -147,13 +94,6 @@ export async function updateJob(job: JobApplication): Promise<void> {
       timestamp: Date.now(),
     });
     await setPendingChanges(pendingChanges);
-
-    // Try to sync if online
-    try {
-      await syncWithServer();
-    } catch (error) {
-      console.log('Will sync later:', error);
-    }
   } catch (error) {
     console.error('Error updating job:', error);
     throw error;
@@ -162,7 +102,6 @@ export async function updateJob(job: JobApplication): Promise<void> {
 
 export async function deleteJob(jobId: string): Promise<void> {
   try {
-    // Delete from local storage
     const jobs = await getLocalJobs();
     const jobToDelete = jobs.find(j => j.id === jobId);
     if (!jobToDelete) return;
@@ -170,7 +109,6 @@ export async function deleteJob(jobId: string): Promise<void> {
     const updatedJobs = jobs.filter(j => j.id !== jobId);
     await setLocalJobs(updatedJobs);
 
-    // Add to pending changes
     const pendingChanges = await getPendingChanges();
     pendingChanges.push({
       type: 'delete',
@@ -178,13 +116,6 @@ export async function deleteJob(jobId: string): Promise<void> {
       timestamp: Date.now(),
     });
     await setPendingChanges(pendingChanges);
-
-    // Try to sync if online
-    try {
-      await syncWithServer();
-    } catch (error) {
-      console.log('Will sync later:', error);
-    }
   } catch (error) {
     console.error('Error deleting job:', error);
     throw error;
@@ -201,30 +132,5 @@ export async function clearAllJobs(): Promise<void> {
   } catch (error) {
     console.error('Error clearing all jobs:', error);
     throw error;
-  }
-}
-
-// Network status listener
-let syncInterval: NodeJS.Timeout;
-
-export function startSyncService(intervalMs = 60000): void {
-  // Clear any existing interval
-  if (syncInterval) {
-    clearInterval(syncInterval);
-  }
-
-  // Set up periodic sync
-  syncInterval = setInterval(async () => {
-    try {
-      await syncWithServer();
-    } catch (error) {
-      console.log('Sync failed, will retry later:', error);
-    }
-  }, intervalMs);
-}
-
-export function stopSyncService(): void {
-  if (syncInterval) {
-    clearInterval(syncInterval);
   }
 }

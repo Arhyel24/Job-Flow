@@ -27,6 +27,7 @@ const jobSchema = z.object({
   dateApplied: z.string().nonempty("Date applied is required"),
   status: jobStatusEnum, 
   url: z.string().url('Invalid URL').optional().or(z.literal('')),
+  followUpDate: z.string(),
   notes: z.string().optional(),
   contactPerson: z.string().optional(),
   contactEmail: z.string().email('Invalid email').optional().or(z.literal('')),
@@ -57,6 +58,7 @@ export default function NewJobModal() {
       dateApplied: new Date().toISOString().substring(0, 10),
       status: 'applied',
       url: '',
+      followUpDate: new Date().toISOString().substring(0, 10),
       notes: '',
       contactPerson: '',
       contactEmail: '',
@@ -64,6 +66,7 @@ export default function NewJobModal() {
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showFollowUpDatePicker, setShowFollowUpDatePicker] = useState(false);
 
 const rawDateApplied = watch('dateApplied');
 
@@ -73,6 +76,15 @@ const dateAppliedValue = rawDateApplied ? new Date(rawDateApplied) : new Date();
     setShowDatePicker(false);
     if (selectedDate) {
       setValue('dateApplied', selectedDate.toDateString());
+    }
+  };
+
+const followUpValue = rawDateApplied ? new Date(rawDateApplied) : new Date();
+
+  const onChangeFollowUpDate = (event: any, selectedDate?: Date) => {
+    setShowFollowUpDatePicker(false);
+    if (selectedDate) {
+      setValue('followUpDate', selectedDate.toDateString());
     }
   };
 
@@ -217,6 +229,24 @@ const dateAppliedValue = rawDateApplied ? new Date(rawDateApplied) : new Date();
             />
           )}
         />
+        <Input
+          label="Follow-up  Date"
+          value={followUpValue ? format(followUpValue, 'yyyy-MM-dd') : ''}
+          onPressIn={() => setShowFollowUpDatePicker(true)}
+              leftIcon={<Calendar size={20} color={theme.text.secondary} />}
+          showSoftInputOnFocus={false} 
+          pointerEvents="none"
+        />
+
+        {showFollowUpDatePicker && (
+          <DateTimePicker
+            value={followUpValue || new Date()}
+            mode="date"
+            display="default"
+            onChange={onChangeFollowUpDate}
+            maximumDate={new Date()}
+        />
+        )}
         <Controller
           control={control}
           name="contactPerson"

@@ -81,7 +81,7 @@ export default function EditJobModal() {
       contactPerson: "",
       contactEmail: "",
     },
-  });
+  }); 
 
   useEffect(() => {
     const found = jobs.find((j) => j.id === id);

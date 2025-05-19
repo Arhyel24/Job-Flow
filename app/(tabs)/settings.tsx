@@ -20,7 +20,6 @@ import {
   LogOut,
   MessageSquarePlus,
   Moon,
-  Trash2,
   Lock,
 } from "lucide-react-native";
 import { useState } from "react";

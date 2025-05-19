@@ -9,6 +9,7 @@ import DocumentListView from "../../components/documents/DocumentListView";
 import { useDocuments } from "../../context/documentContext";
 import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
+import * as Sharing from "expo-sharing";
 
 export default function DocumentsScreen() {
   const { theme } = useTheme();
@@ -40,8 +41,15 @@ export default function DocumentsScreen() {
     }
   };
 
-  const handlePreview = (doc: Document) => console.log("Preview", doc.name);
-  const handleDownload = (doc: Document) => console.log("Download", doc.name);
+  const handleDownload = async (file: Document) => {
+    if (!file) return;
+
+    try {
+      await Sharing.shareAsync(file.uri);
+    } catch (err) {
+      console.error("Download failed:", err);
+    }
+  };
 
   return (
     <SafeAreaView style={styles(theme).container} edges={["top"]}>
@@ -51,15 +59,12 @@ export default function DocumentsScreen() {
         </Text>
       </View>
 
-      <ScrollView style={styles(theme).content}>
-        <DocumentListView
-          documents={documents}
-          onUpload={handleDocumentPick}
-          onPreview={handlePreview}
-          onDownload={handleDownload}
-          onWizardStart={() => router.push("/(modals)/wizard")}
-        />
-      </ScrollView>
+      <DocumentListView
+        documents={documents}
+        onUpload={handleDocumentPick}
+        onDownload={handleDownload}
+        onWizardStart={() => router.push("/(modals)/wizard")}
+      />
     </SafeAreaView>
   );
 }

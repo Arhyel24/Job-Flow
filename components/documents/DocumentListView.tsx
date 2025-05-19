@@ -1,6 +1,5 @@
 import React from "react";
 import { View, TouchableOpacity, StyleSheet, FlatList } from "react-native";
-import Card from "../ui/Card";
 import Button from "../ui/Button";
 import Text from "../ui/Text";
 import {
@@ -9,17 +8,17 @@ import {
   FileUp,
   FileText,
   FileImage,
-  Lock,
   LayoutGrid,
+  Share,
 } from "lucide-react-native";
 import { useTheme } from "../../context/themeContext";
 import { Document } from "../../types/document";
 import EmptyState from "../EmptyState";
+import { router } from "expo-router";
 
 interface Props {
   documents: Document[];
   onUpload: (type: string) => void;
-  onPreview: (doc: Document) => void;
   onDownload: (doc: Document) => void;
   onWizardStart: () => void;
 }
@@ -27,7 +26,6 @@ interface Props {
 const DocumentListView: React.FC<Props> = ({
   documents,
   onUpload,
-  onPreview,
   onDownload,
   onWizardStart,
 }) => {
@@ -35,30 +33,6 @@ const DocumentListView: React.FC<Props> = ({
 
   return (
     <View style={styles.container}>
-      <View style={styles.wizardCard}>
-        <View style={styles.wizardContent}>
-          <View style={styles.wizardTextContent}>
-            <Text variant="h4" weight="bold" style={styles.wizardTitle}>
-              Need help with your documents?
-            </Text>
-            <Text color="secondary" style={styles.wizardDescription}>
-              Our document wizard will guide you through creating professional
-              documents
-            </Text>
-          </View>
-          <Button
-            title="Start Wizard"
-            onPress={onWizardStart}
-            leftIcon={<LayoutGrid size={20} color={theme.secondary} />}
-            style={styles.wizardButton}
-          />
-        </View>
-      </View>
-
-      <Text variant="h4" weight="bold" style={styles.documentsTitle}>
-        Your Documents
-      </Text>
-
       <FlatList
         data={documents}
         ListEmptyComponent={
@@ -69,6 +43,40 @@ const DocumentListView: React.FC<Props> = ({
               label: "Upload Document",
               onPress: () => onUpload("resume"),
             }}
+          />
+        }
+        ListHeaderComponent={
+          <>
+            <View style={styles.wizardCard}>
+              <View style={styles.wizardContent}>
+                <View style={styles.wizardTextContent}>
+                  <Text variant="h4" weight="bold" style={styles.wizardTitle}>
+                    Need help with your documents?
+                  </Text>
+                  <Text color="secondary" style={styles.wizardDescription}>
+                    Our document wizard will guide you through creating
+                    professional documents
+                  </Text>
+                </View>
+                <Button
+                  title="Start Wizard"
+                  onPress={onWizardStart}
+                  leftIcon={<LayoutGrid size={20} color={theme.secondary} />}
+                  style={styles.wizardButton}
+                />
+              </View>
+            </View>
+
+            <Text variant="h4" weight="bold" style={styles.documentsTitle}>
+              Your Documents
+            </Text>
+          </>
+        }
+        ListFooterComponent={
+          <Button
+            title="Upload New Document"
+            onPress={() => onUpload("resume")}
+            style={styles.uploadButton}
           />
         }
         keyExtractor={(item) => item.id}
@@ -90,7 +98,7 @@ const DocumentListView: React.FC<Props> = ({
                 styles.documentItem,
                 !isLastItem && styles.documentItemBorder,
               ]}
-              onPress={() => onPreview(item)}
+              onPress={() => router.push(`/(modals)/docs/${item.id}`)}
             >
               <View style={styles.documentInfo}>
                 <View style={styles.iconContainer}>
@@ -116,7 +124,7 @@ const DocumentListView: React.FC<Props> = ({
                   style={styles.actionButton}
                   hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
                 >
-                  <Download size={20} color={theme.primary} />
+                  <Share size={20} color={theme.primary} />
                 </TouchableOpacity>
                 <ChevronRight size={20} color={theme.text.secondary} />
               </View>
@@ -124,12 +132,6 @@ const DocumentListView: React.FC<Props> = ({
           );
         }}
       ></FlatList>
-
-      <Button
-        title="Upload New Document"
-        onPress={() => onUpload("resume")}
-        style={styles.uploadButton}
-      />
     </View>
   );
 };

@@ -5,6 +5,8 @@ import { Document, AnalysisResult } from "../types/document";
 
 interface DocumentContextType {
   documents: Document[];
+  getDocumentById: (id: string) => Promise<Document | undefined>;
+  deleteDocument: (id: string) => Promise<void>;
   addDocument: (doc: Document) => void;
   removeDocument: (id: string) => void;
   updateDocument: (id: string, updates: Partial<Document>) => void;
@@ -74,6 +76,29 @@ export const DocumentProvider = ({
         type: "error",
         text1: "Storage Error",
         text2: `Failed to save ${key}.`,
+      });
+    }
+  };
+
+  const getDocumentById = async (id: string): Promise<Document | undefined> => {
+    try {
+      return documents.find((doc) => doc.id === id);
+    } catch (error) {
+      console.error(`Failed to get document with ID ${id}`, error);
+      return undefined;
+    }
+  };
+
+  const deleteDocument = async (id: string): Promise<void> => {
+    try {
+      const updated = documents.filter((doc) => doc.id !== id);
+      await AsyncStorage.setItem(STORAGE_KEYS.DOCUMENTS, JSON.stringify(updated));
+    } catch (error) {
+      console.error(`Failed to delete document with ID ${id}`, error);
+      Toast.show({
+        type: "error",
+        text1: "Storage Error",
+        text2: `Failed to delete ${id}.`,
       });
     }
   };
@@ -193,6 +218,8 @@ export const DocumentProvider = ({
     <DocumentContext.Provider
       value={{
         documents,
+        getDocumentById,
+        deleteDocument,
         addDocument,
         removeDocument,
         updateDocument,

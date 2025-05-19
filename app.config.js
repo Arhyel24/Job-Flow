@@ -88,9 +88,6 @@ export default {
     eas: {
       projectId: "1a3825d8-ddde-4e78-9295-89856a50e31c",
     },
-    // googleWebClientId: process.env.GOOGLE_WEB_CLIENT_ID,
-    // googleIosClientId: process.env.GOOGLE_IOS_CLIENT_ID,
-    googleAndroidClientId: process.env.GOOGLE_ANDROID_CLIENT_ID,
     plugins: ["@react-native-google-signin/google-signin"],
   },
   expo: {

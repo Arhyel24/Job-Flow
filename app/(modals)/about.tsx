@@ -17,29 +17,37 @@ export default function AboutModal() {
         </Text>
 
         <Text style={styles.paragraph}>
-          JobFlow is a modern job application tracker built for professionals
-          and job seekers who want to stay organized and in control of their
-          career journey.
+          JobFlow is a smart and intuitive job application tracker designed to
+          simplify and streamline the job search process. Built with a focus on
+          usability and privacy, it helps users stay organized, motivated, and
+          in control of their career journey.
         </Text>
 
         <Text style={styles.paragraph}>
-          The app allows you to log, update, and monitor the progress of your
-          job applications in one centralized place — no spreadsheets required.
+          With JobFlow, you can easily log new job applications, monitor their
+          progress, and keep track of important milestones such as interviews,
+          follow-ups, and outcomes — all in one central location, without the
+          need for cluttered spreadsheets or scattered notes.
         </Text>
 
         <Text style={styles.paragraph}>
-          Created by Enoch Philip, a developer who experienced firsthand the
-          challenge of managing job applications across multiple platforms.
-          JobFlow was born out of a need to simplify that process.
+          The app was created in response to the common frustration many job
+          seekers face when managing multiple applications across different
+          platforms. JobFlow brings everything together into a clean, focused
+          experience that puts your job hunt at your fingertips.
+        </Text>
+
+        <Text style={styles.paragraph}>
+          JobFlow operates entirely offline with optional cloud backup to your
+          own Google Drive. Your data remains yours, fully private and secure.
         </Text>
 
         <Text style={styles.paragraph}>Version: 1.0.0</Text>
-
         <Text style={styles.paragraph}>Developed with care by IRIS LABS</Text>
 
         <Button
-          title="Visit Our Website"
-          onPress={() => Linking.openURL("https://yourwebsite.com")}
+          title="Follow us on Twitter"
+          onPress={() => Linking.openURL("https://x.com/earhyel")}
           style={styles.button}
         />
 

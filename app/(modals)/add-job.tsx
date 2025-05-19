@@ -40,7 +40,7 @@ const jobSchema = z.object({
   dateApplied: z.string().nonempty("Date applied is required"),
   status: jobStatusEnum,
   url: z.string().url("Invalid URL").optional().or(z.literal("")),
-  followUpDate: z.string(),
+  followUpDate: z.string().optional().or(z.literal("")),
   notes: z.string().optional(),
   contactPerson: z.string().optional(),
   contactEmail: z.string().email("Invalid email").optional().or(z.literal("")),
@@ -82,6 +82,7 @@ export default function NewJobModal() {
   const [showFollowUpDatePicker, setShowFollowUpDatePicker] = useState(false);
 
   const rawDateApplied = watch("dateApplied");
+  const rawFollowUpDateApplied = watch("dateApplied");
 
   const dateAppliedValue = rawDateApplied
     ? new Date(rawDateApplied)
@@ -94,7 +95,7 @@ export default function NewJobModal() {
     }
   };
 
-  const followUpValue = rawDateApplied ? new Date(rawDateApplied) : new Date();
+  const followUpValue = rawFollowUpDateApplied && new Date(rawDateApplied);
 
   const onChangeFollowUpDate = (event: any, selectedDate?: Date) => {
     setShowFollowUpDatePicker(false);
@@ -268,7 +269,10 @@ export default function NewJobModal() {
             mode="date"
             display="default"
             onChange={onChangeFollowUpDate}
-            maximumDate={new Date()}
+            minimumDate={new Date()}
+            maximumDate={
+              new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+            }
           />
         )}
         <Controller

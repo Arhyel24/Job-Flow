@@ -17,41 +17,51 @@ export default function PrivacyModal() {
         </Text>
 
         <Text style={styles.paragraph}>
-          Your privacy is important to us. This Privacy Policy explains how
-          JobFlow collects, uses, and protects your information.
+          At JobFlow, we take your privacy seriously. This Privacy Policy
+          explains our simple and transparent approach: we do not collect or
+          store any personal data.
         </Text>
 
-        <Text style={styles.sectionTitle}>1. Information We Collect</Text>
+        <Text style={styles.sectionTitle}>1. Data Collection</Text>
         <Text style={styles.paragraph}>
-          We collect information such as:
-          {"\n"}- Google account name & email (on sign-in)
-          {"\n"}- Job entries you create manually
-          {"\n"}- Anonymous device metadata for stability
+          JobFlow does not collect, track, or analyze any personal data, usage
+          data, or device metadata. We believe your job search is your private
+          business.
         </Text>
 
-        <Text style={styles.sectionTitle}>2. How We Use Your Information</Text>
+        <Text style={styles.sectionTitle}>2. Backups & Data Storage</Text>
         <Text style={styles.paragraph}>
-          We use your data solely to:
-          {"\n"}- Provide core features
-          {"\n"}- Sync and store job info securely
-          {"\n"}- Improve app experience (anonymously)
+          All your job data, including resumes, notes, and tracking history, is
+          stored locally on your device. When you choose to back up your data,
+          it is saved securely to your own Google Drive account — not ours.
+          {"\n\n"}
+          This means only you have access to your backup files. JobFlow has no
+          visibility or access to any of the files in your Drive.
         </Text>
 
-        <Text style={styles.sectionTitle}>3. Data Security</Text>
+        <Text style={styles.sectionTitle}>3. No Analytics or Tracking</Text>
         <Text style={styles.paragraph}>
-          Your data is protected using Supabase and local device encryption. We
-          never sell or share your data.
+          We do not use analytics tools, trackers, or advertising identifiers.
+          We simply don’t track anything — no session data, no usage behavior,
+          and no personal identifiers.
         </Text>
 
-        <Text style={styles.sectionTitle}>4. Your Rights</Text>
+        <Text style={styles.sectionTitle}>4. Your Control</Text>
         <Text style={styles.paragraph}>
-          You can delete your account at any time. This will remove your data
-          from both your device and our servers.
+          You’re in full control of your data. If you uninstall the app, all
+          stored data on your device is removed. Likewise, you can delete
+          backups from your Google Drive at any time.
         </Text>
 
-        <Text style={styles.sectionTitle}>5. Contact</Text>
+        <Text style={styles.sectionTitle}>5. Changes to This Policy</Text>
         <Text style={styles.paragraph}>
-          For questions, email: support@jobflowapp.com
+          If we ever change our privacy approach, we’ll notify users clearly
+          within the app. Transparency is our default.
+        </Text>
+
+        <Text style={styles.sectionTitle}>6. Contact</Text>
+        <Text style={styles.paragraph}>
+          Questions or feedback? Reach out to us at: support@jobflowapp.com
         </Text>
 
         <Button

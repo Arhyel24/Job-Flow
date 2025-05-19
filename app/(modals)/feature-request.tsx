@@ -1,4 +1,4 @@
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView, Alert, Linking } from "react-native";
 import { useTheme } from "../../context/themeContext";
 import { useRouter } from "expo-router";
 import Button from "../../components/ui/Button";
@@ -11,11 +11,31 @@ export default function FeatureRequestModal() {
   const { theme } = useTheme();
   const router = useRouter();
   const styles = createStyles(theme);
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [featureRequest, setFeatureRequest] = useState("");
 
-  const handleSubmit = () => {
-    // Submit logic here
-    router.back();
+  const handleSubmit = async () => {
+    if (!name || !email || !featureRequest) {
+      Alert.alert("Missing Information", "Please fill in all fields.");
+      return;
+    }
+
+    const subject = encodeURIComponent(`Feature Request from ${name}`);
+    const body = encodeURIComponent(
+      `Name: ${name}\nEmail: ${email}\n\nFeature Request:\n${featureRequest}`
+    );
+
+    const mailtoUrl = `mailto:arhyelphilip024@gmail.com?subject=${subject}&body=${body}`;
+
+    const canOpen = await Linking.canOpenURL(mailtoUrl);
+    if (canOpen) {
+      Linking.openURL(mailtoUrl);
+      router.back();
+    } else {
+      Alert.alert("Error", "Unable to open the mail app.");
+    }
   };
 
   return (
@@ -27,6 +47,24 @@ export default function FeatureRequestModal() {
       <Text style={styles.paragraph}>
         We'd love to hear your ideas for improving JobTracker!
       </Text>
+
+      <Input
+        label="Your Name"
+        placeholder="John Doe"
+        value={name}
+        onChangeText={setName}
+        style={styles.input}
+      />
+
+      <Input
+        label="Your Email"
+        placeholder="you@example.com"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        value={email}
+        onChangeText={setEmail}
+        style={styles.input}
+      />
 
       <Input
         label="Your Feature Request"
@@ -66,6 +104,9 @@ const createStyles = (theme: ThemeColors) =>
       marginBottom: 20,
       color: theme.text.secondary,
       lineHeight: 22,
+    },
+    input: {
+      marginBottom: 16,
     },
     textArea: {
       height: 180,

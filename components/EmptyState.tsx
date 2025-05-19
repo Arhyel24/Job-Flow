@@ -1,8 +1,8 @@
-import { View, StyleSheet } from 'react-native';
-import { ClipboardList } from 'lucide-react-native';
-import Text from './ui/Text';
-import Button from './ui/Button';
-import { useTheme } from '../context/themeContext';
+import { View, StyleSheet } from "react-native";
+import { ClipboardList } from "lucide-react-native";
+import Text from "./ui/Text";
+import Button from "./ui/Button";
+import { useTheme } from "../context/themeContext";
 
 interface EmptyStateProps {
   title: string;
@@ -14,8 +14,13 @@ interface EmptyStateProps {
   icon?: React.ReactNode;
 }
 
-export default function EmptyState({ title, message, action, icon }: EmptyStateProps) {
-  const { theme } = useTheme()
+export default function EmptyState({
+  title,
+  message,
+  action,
+  icon,
+}: EmptyStateProps) {
+  const { theme } = useTheme();
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
@@ -41,8 +46,8 @@ export default function EmptyState({ title, message, action, icon }: EmptyStateP
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 16,
   },
   iconContainer: {

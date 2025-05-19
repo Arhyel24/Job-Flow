@@ -1,6 +1,6 @@
-import React from 'react';
-import { Portal, Dialog, Text, Button } from 'react-native-paper';
-import { useTheme } from '../context/themeContext';
+import React from "react";
+import { Portal, Dialog, Text, Button } from "react-native-paper";
+import { useTheme } from "../context/themeContext";
 
 interface LogoutDialogProps {
   visible: boolean;

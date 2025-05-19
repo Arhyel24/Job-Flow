@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import "dotenv/config";
 
 const IS_DEV = process.env.APP_VARIANT === "development";
 const IS_PREVIEW = process.env.APP_VARIANT === "preview";
@@ -40,14 +40,14 @@ export default {
     supportsTablet: true,
     bundleIdentifier: getUniqueIdentifier(),
     config: {
-      useNonExemptEncryption: false
+      useNonExemptEncryption: false,
     },
     icons: {
       dark: "./assets/icons/ios-dark.png",
       light: "./assets/icons/ios-light.png",
       tinted: "./assets/icons/ios-tinted.png",
-      backgroundColor: "#ffffff"
-    }
+      backgroundColor: "#ffffff",
+    },
   },
   android: {
     adaptiveIcon: {
@@ -62,7 +62,8 @@ export default {
     output: "static",
     favicon: "./assets/icons/adaptive-icon.png",
   },
-  plugins: ["expo-router",
+  plugins: [
+    "expo-router",
     [
       "expo-splash-screen",
       {
@@ -73,9 +74,9 @@ export default {
         dark: {
           image: "./assets/icons/splash-icon-dark.png",
           backgroundColor: "#000",
-        }
-      }
-    ]
+        },
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,
@@ -85,14 +86,16 @@ export default {
       origin: false,
     },
     eas: {
-        "projectId": "1a3825d8-ddde-4e78-9295-89856a50e31c"
-      },
+      projectId: "1a3825d8-ddde-4e78-9295-89856a50e31c",
+    },
     // googleWebClientId: process.env.GOOGLE_WEB_CLIENT_ID,
     // googleIosClientId: process.env.GOOGLE_IOS_CLIENT_ID,
     googleAndroidClientId: process.env.GOOGLE_ANDROID_CLIENT_ID,
-    plugins: ["@react-native-google-signin/google-signin"]
+    plugins: ["@react-native-google-signin/google-signin"],
+  },
+  expo: {
+    scheme: "jobflow",
   },
 };
-
 
 // keytool -list -v -alias androiddebugkey -keystore %USERPROFILE%\.android\debug.keystore -storepass android -keypass android

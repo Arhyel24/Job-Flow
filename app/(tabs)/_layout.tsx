@@ -1,10 +1,10 @@
-import { Redirect, Tabs } from 'expo-router';
-import { Platform, StyleSheet } from 'react-native';
-import { Home, Briefcase, FileText, Settings } from 'lucide-react-native';
-import { useTheme } from '../../context/themeContext';
-import { useAuth } from '../../context/authContext';
-import { ThemeColors } from '../../constants/colors';
-import { StatusBar } from 'expo-status-bar';
+import { Redirect, Tabs } from "expo-router";
+import { Platform, StyleSheet } from "react-native";
+import { Home, Briefcase, FileText, Settings } from "lucide-react-native";
+import { useTheme } from "../../context/themeContext";
+import { useAuth } from "../../context/authContext";
+import { ThemeColors } from "../../constants/colors";
+import { StatusBar } from "expo-status-bar";
 
 export default function TabLayout() {
   const { theme, isDarkMode } = useTheme();
@@ -12,7 +12,10 @@ export default function TabLayout() {
 
   return (
     <>
-      <StatusBar backgroundColor={theme.background} style={isDarkMode ? "dark" : "light"} />
+      <StatusBar
+        backgroundColor={theme.background}
+        style={isDarkMode ? "light" : "dark"}
+      />
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: theme.primary,
@@ -26,29 +29,35 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Dashboard',
+            title: "Dashboard",
             tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
           }}
         />
         <Tabs.Screen
           name="jobs"
           options={{
-            title: 'Applications',
-            tabBarIcon: ({ color, size }) => <Briefcase color={color} size={size} />,
+            title: "Applications",
+            tabBarIcon: ({ color, size }) => (
+              <Briefcase color={color} size={size} />
+            ),
           }}
         />
         <Tabs.Screen
           name="documents"
           options={{
-            title: 'Documents',
-            tabBarIcon: ({ color, size }) => <FileText color={color} size={size} />,
+            title: "Documents",
+            tabBarIcon: ({ color, size }) => (
+              <FileText color={color} size={size} />
+            ),
           }}
         />
         <Tabs.Screen
           name="settings"
           options={{
-            title: 'Settings',
-            tabBarIcon: ({ color, size }) => <Settings color={color} size={size} />,
+            title: "Settings",
+            tabBarIcon: ({ color, size }) => (
+              <Settings color={color} size={size} />
+            ),
           }}
         />
       </Tabs>
@@ -63,12 +72,12 @@ const createStyles = (theme: ThemeColors) =>
       borderTopWidth: 0.2,
       borderTopColor: theme.border,
       paddingTop: 4,
-      paddingBottom: Platform.OS === 'ios' ? 24 : 8,
-      height: Platform.OS === 'ios' ? 80 : 60,
+      paddingBottom: Platform.OS === "ios" ? 24 : 8,
+      height: Platform.OS === "ios" ? 80 : 60,
     },
     tabBarLabel: {
       fontSize: 12,
-      fontWeight: '500',
+      fontWeight: "500",
       marginBottom: 4,
     },
   });

@@ -4,15 +4,15 @@ import {
   View,
   ActivityIndicator,
   TouchableOpacityProps,
-} from 'react-native';
-import Text from './Text';
-import { useTheme } from '../../context/themeContext';
-import { getColors } from '../../constants/colors';
+} from "react-native";
+import Text from "./Text";
+import { useTheme } from "../../context/themeContext";
+import { getColors } from "../../constants/colors";
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
-  size?: 'small' | 'medium' | 'large';
+  variant?: "primary" | "secondary" | "outline" | "ghost";
+  size?: "small" | "medium" | "large";
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   color?: string;
@@ -22,8 +22,8 @@ interface ButtonProps extends TouchableOpacityProps {
 
 export default function Button({
   title,
-  variant = 'primary',
-  size = 'medium',
+  variant = "primary",
+  size = "medium",
   leftIcon,
   color,
   rightIcon,
@@ -38,28 +38,28 @@ export default function Button({
   const buttonStyles = [
     styles.base,
     styles[size],
-    variant === 'primary' && { backgroundColor: colors.primary },
-    variant === 'secondary' && { backgroundColor: colors.secondary },
-    variant === 'outline' && {
-      backgroundColor: 'transparent',
+    variant === "primary" && { backgroundColor: colors.primary },
+    variant === "secondary" && { backgroundColor: colors.secondary },
+    variant === "outline" && {
+      backgroundColor: "transparent",
       borderWidth: 1,
       borderColor: colors.border,
     },
-    variant === 'ghost' && {
-      backgroundColor: 'transparent',
+    variant === "ghost" && {
+      backgroundColor: "transparent",
     },
     (disabled || isLoading) && { opacity: 0.5 },
     style,
   ];
 
   const textColor =
-    variant === 'primary'
+    variant === "primary"
       ? colors.text.white
-      : variant === 'secondary'
+      : variant === "secondary"
       ? colors.primary
-      : variant === 'outline'
+      : variant === "outline"
       ? colors.primary
-      : variant === 'ghost'
+      : variant === "ghost"
       ? colors.text.primary
       : colors.text.disabled;
 
@@ -70,22 +70,26 @@ export default function Button({
       {...props}
     >
       <View style={styles.content}>
-        {leftIcon && !isLoading && <View style={styles.iconLeft}>{leftIcon}</View>}
+        {leftIcon && !isLoading && (
+          <View style={styles.iconLeft}>{leftIcon}</View>
+        )}
         {isLoading ? (
           <ActivityIndicator
-            color={variant === 'primary' ? colors.text.white : colors.primary}
+            color={variant === "primary" ? colors.text.white : colors.primary}
             size="small"
           />
         ) : (
           <Text
             weight="medium"
             color={color ? color : textColor}
-            variant={size === 'small' ? 'caption' : 'body'}
+            variant={size === "small" ? "caption" : "body"}
           >
             {title}
           </Text>
         )}
-        {rightIcon && !isLoading && <View style={styles.iconRight}>{rightIcon}</View>}
+        {rightIcon && !isLoading && (
+          <View style={styles.iconRight}>{rightIcon}</View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -94,8 +98,8 @@ export default function Button({
 const styles = StyleSheet.create({
   base: {
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   small: {
     paddingVertical: 8,
@@ -110,9 +114,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   content: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   iconLeft: {
     marginRight: 8,

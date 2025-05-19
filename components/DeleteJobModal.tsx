@@ -1,6 +1,6 @@
-import React from 'react';
-import { Portal, Dialog, Text, Button } from 'react-native-paper';
-import { useTheme } from '../context/themeContext';
+import React from "react";
+import { Portal, Dialog, Text, Button } from "react-native-paper";
+import { useTheme } from "../context/themeContext";
 
 interface LogoutDialogProps {
   visible: boolean;
@@ -23,11 +23,12 @@ export default function DeleteJobDialogue({
         style={{ backgroundColor: theme.card }}
       >
         <Dialog.Title style={{ color: theme.text.primary }}>
-            Delete Application
+          Delete Application
         </Dialog.Title>
         <Dialog.Content>
           <Text variant="bodyMedium" style={{ color: theme.text.secondary }}>
-            Are you sure you want to delete this job application? This cannot be undone.
+            Are you sure you want to delete this job application? This cannot be
+            undone.
           </Text>
         </Dialog.Content>
         <Dialog.Actions>

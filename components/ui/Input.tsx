@@ -1,7 +1,13 @@
-import { useState } from 'react';
-import { View, TextInput, StyleSheet, TextInputProps, Platform } from 'react-native';
-import Text from './Text';
-import { useTheme } from '../../context/themeContext';
+import { useState } from "react";
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  TextInputProps,
+  Platform,
+} from "react-native";
+import Text from "./Text";
+import { useTheme } from "../../context/themeContext";
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -21,9 +27,9 @@ export default function Input({
   ...props
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
-  const { theme } = useTheme()
-  
-  const styles = createStyles(theme)
+  const { theme } = useTheme();
+
+  const styles = createStyles(theme);
 
   return (
     <View style={styles.container}>
@@ -74,8 +80,8 @@ const createStyles = (theme: any) => {
       marginBottom: 6,
     },
     inputContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       borderWidth: 1,
       borderColor: theme.border,
       borderRadius: 8,
@@ -89,11 +95,11 @@ const createStyles = (theme: any) => {
     },
     input: {
       flex: 1,
-      height: Platform.OS === 'web' ? 40 : 48,
+      height: Platform.OS === "web" ? 40 : 48,
       color: theme.text.primary,
       paddingHorizontal: 12,
       fontSize: 16,
-      fontFamily: 'Inter-Regular',
+      fontFamily: "Inter-Regular",
     },
     inputWithLeftIcon: {
       paddingLeft: 8,
@@ -110,5 +116,5 @@ const createStyles = (theme: any) => {
     error: {
       marginTop: 4,
     },
-  })
-}
+  });
+};

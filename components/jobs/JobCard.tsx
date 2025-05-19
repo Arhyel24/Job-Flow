@@ -1,11 +1,11 @@
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { format } from 'date-fns';
-import { ChevronRight, Calendar, Building2, MapPin } from 'lucide-react-native';
-import StatusBadge from './StatusBadge';
-import Card from '../ui/Card';
-import Text from '../ui/Text';
-import { useTheme } from '../../context/themeContext';
-import { JobApplication } from '../../types/jobs';
+import { View, TouchableOpacity, StyleSheet } from "react-native";
+import { format } from "date-fns";
+import { ChevronRight, Calendar, Building2, MapPin } from "lucide-react-native";
+import StatusBadge from "./StatusBadge";
+import Card from "../ui/Card";
+import Text from "../ui/Text";
+import { useTheme } from "../../context/themeContext";
+import { JobApplication } from "../../types/jobs";
 
 interface JobCardProps {
   job: JobApplication;
@@ -44,7 +44,7 @@ export default function JobCard({ job, onPress }: JobCardProps) {
               )}
             </View>
           </View>
-          
+
           <View style={styles.rightSection}>
             <StatusBadge status={job.status} />
             <ChevronRight size={18} color={theme.text.secondary} />
@@ -54,7 +54,7 @@ export default function JobCard({ job, onPress }: JobCardProps) {
         <View style={styles.footer}>
           <Calendar size={14} color={theme.text.secondary} />
           <Text style={styles.dateText}>
-            {format(new Date(job.dateApplied), 'MMM d, yyyy')}
+            {format(new Date(job.dateApplied), "MMM d, yyyy")}
           </Text>
         </View>
       </Card>
@@ -75,8 +75,8 @@ const createStyles = (theme: any) =>
       borderColor: theme.border,
     },
     mainContent: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      justifyContent: "space-between",
       marginBottom: 8,
     },
     textContent: {
@@ -89,8 +89,8 @@ const createStyles = (theme: any) =>
       marginBottom: 4,
     },
     metaRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
     },
     companyText: {
       fontSize: 13,
@@ -112,13 +112,13 @@ const createStyles = (theme: any) =>
       marginHorizontal: 6,
     },
     rightSection: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: 8,
     },
     footer: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
     },
     dateText: {
       fontSize: 12,

@@ -2,17 +2,14 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { Appearance } from "react-native";
 import { getColors, ThemeColors } from "../constants/colors";
 
-// Define the context structure
 interface ThemeContextType {
   isDarkMode: boolean;
   theme: ThemeColors;
-  toggleTheme: () => void; 
+  toggleTheme: () => void;
 }
 
-// Create the ThemeContext
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// ThemeProvider component
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -38,7 +35,6 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-// Custom hook to use the ThemeContext
 export const useTheme = (): ThemeContextType => {
   const context = useContext(ThemeContext);
   if (!context) {

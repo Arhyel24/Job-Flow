@@ -1,16 +1,16 @@
-import React from 'react';
-import { View, StyleSheet, ViewProps, ViewStyle } from 'react-native';
-import { useTheme } from '../../context/themeContext'; 
+import React from "react";
+import { View, StyleSheet, ViewProps, ViewStyle } from "react-native";
+import { useTheme } from "../../context/themeContext";
 
 interface CardProps extends ViewProps {
-  variant?: 'default' | 'elevated' | 'outline';
-  padding?: 'none' | 'small' | 'medium' | 'large';
+  variant?: "default" | "elevated" | "outline";
+  padding?: "none" | "small" | "medium" | "large";
 }
 
 export default function Card({
   children,
-  variant = 'default',
-  padding = 'medium',
+  variant = "default",
+  padding = "medium",
   style,
   ...props
 }: CardProps) {
@@ -25,7 +25,7 @@ export default function Card({
       // no extra styles, just for TypeScript
     },
     elevated: {
-      shadowColor: '#000',
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
@@ -36,9 +36,8 @@ export default function Card({
       borderColor: theme.border,
     },
   });
-  
 
-  const paddingStyles: Record<NonNullable<CardProps['padding']>, ViewStyle> = {
+  const paddingStyles: Record<NonNullable<CardProps["padding"]>, ViewStyle> = {
     none: { padding: 0 },
     small: { padding: 12 },
     medium: { padding: 16 },

@@ -1,20 +1,24 @@
-import { Text as RNText, StyleSheet, TextProps as RNTextProps } from 'react-native';
-import { useTheme } from '../../context/themeContext';
-import { lightThemeColors } from '../../constants/colors';
+import {
+  Text as RNText,
+  StyleSheet,
+  TextProps as RNTextProps,
+} from "react-native";
+import { useTheme } from "../../context/themeContext";
+import { lightThemeColors } from "../../constants/colors";
 
 interface TextProps extends RNTextProps {
-  variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'body' | 'label' | 'caption';
+  variant?: "h1" | "h2" | "h3" | "h4" | "body" | "label" | "caption";
   color?: keyof typeof lightThemeColors.text | string;
-  weight?: 'regular' | 'medium' | 'bold';
-  align?: 'left' | 'center' | 'right';
+  weight?: "regular" | "medium" | "bold";
+  align?: "left" | "center" | "right";
 }
 
 export default function Text({
   children,
-  variant = 'body',
-  color = 'primary',
-  weight = 'regular',
-  align = 'left',
+  variant = "body",
+  color = "primary",
+  weight = "regular",
+  align = "left",
   style,
   ...props
 }: TextProps) {
@@ -22,7 +26,7 @@ export default function Text({
   const styles = createStyles();
 
   const resolvedColor =
-    typeof color === 'string' && color in theme.text
+    typeof color === "string" && color in theme.text
       ? theme.text[color as keyof typeof theme.text]
       : color;
 
@@ -45,7 +49,7 @@ export default function Text({
 const createStyles = () =>
   StyleSheet.create({
     base: {
-      fontFamily: 'Inter-Regular',
+      fontFamily: "Inter-Regular",
     },
     h1: {
       fontSize: 28,
@@ -76,12 +80,12 @@ const createStyles = () =>
       lineHeight: 16,
     },
     regular: {
-      fontFamily: 'Inter-Regular',
+      fontFamily: "Inter-Regular",
     },
     medium: {
-      fontFamily: 'Inter-Medium',
+      fontFamily: "Inter-Medium",
     },
     bold: {
-      fontFamily: 'Inter-Bold',
+      fontFamily: "Inter-Bold",
     },
   });

@@ -1,20 +1,20 @@
-import React from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
-import Card from '../../components/ui/Card';
-import Text from '../../components/ui/Text';
-import { JobApplication } from '../../types/jobs';
-import { getStatusCounts } from '../../utils/jobUtils';
-import { useStatusConfig } from '../../constants/jobStatus';
-import { useTheme } from '../../context/themeContext';
+import React from "react";
+import { View, StyleSheet, Dimensions } from "react-native";
+import Card from "../../components/ui/Card";
+import Text from "../../components/ui/Text";
+import { JobApplication } from "../../types/jobs";
+import { getStatusCounts } from "../../utils/jobUtils";
+import { useStatusConfig } from "../../constants/jobStatus";
+import { useTheme } from "../../context/themeContext";
 
-import { PieChart } from 'react-native-svg-charts';
-import { G, Circle, Text as SVGText } from 'react-native-svg';
+import { PieChart } from "react-native-svg-charts";
+import { G, Circle, Text as SVGText } from "react-native-svg";
 
 interface ProgressChartProps {
   jobs: JobApplication[];
 }
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 const CHART_SIZE = width > 600 ? 300 : width - 64;
 
 export default function ProgressChart({ jobs }: ProgressChartProps) {
@@ -33,7 +33,7 @@ export default function ProgressChart({ jobs }: ProgressChartProps) {
         key: `pie-${status}`,
         value: count,
         svg: { fill: config.color },
-        arc: { outerRadius: '100%', cornerRadius: 5 },
+        arc: { outerRadius: "100%", cornerRadius: 5 },
         label: config.label,
         percentage: ((count / total) * 100).toFixed(1),
       };
@@ -95,7 +95,7 @@ export default function ProgressChart({ jobs }: ProgressChartProps) {
 
       <View style={styles.summary}>
         <Text variant="body" weight="medium">
-          Total: {total} application{total !== 1 ? 's' : ''}
+          Total: {total} application{total !== 1 ? "s" : ""}
         </Text>
       </View>
     </Card>
@@ -112,18 +112,18 @@ const createStyles = (theme: any) =>
       color: theme.text.primary,
     },
     chartContainer: {
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     },
     legendContainer: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'center',
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "center",
       marginTop: 20,
     },
     legendItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       marginHorizontal: 10,
       marginBottom: 8,
     },
@@ -138,6 +138,6 @@ const createStyles = (theme: any) =>
     },
     summary: {
       marginTop: 16,
-      alignItems: 'center',
+      alignItems: "center",
     },
   });

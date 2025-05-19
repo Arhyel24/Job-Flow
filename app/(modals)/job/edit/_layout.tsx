@@ -6,13 +6,6 @@ export default function JobsLayout() {
       <Stack.Screen
         name="[id]"
         options={{
-          title: "Job Details",
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="edit"
-        options={{
           title: "Edit Job Details",
           headerShown: false,
         }}

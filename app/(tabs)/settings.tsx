@@ -1,15 +1,36 @@
-import { Platform, ScrollView, StyleSheet, Image, TouchableOpacity, View, Switch, Alert, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Text from '../../components/ui/Text';
-import { Bell, ChevronRight, CloudDownload, CloudUpload, FileText, Info, LogOut, MessageSquarePlus, Moon, Trash2, Lock } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
-import Card from '../../components/ui/Card';
-import { useTheme } from '../../context/themeContext';
-import { Link, useRouter } from 'expo-router';
-import { ThemeColors } from '../../constants/colors';
-import { useAuth } from '../../context/authContext';
-import LogoutDialog from '../../components/logout-modal'
-import Button from '../../components/ui/Button';
+import {
+  ScrollView,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  View,
+  Switch,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Text from "../../components/ui/Text";
+import {
+  Bell,
+  ChevronRight,
+  CloudDownload,
+  CloudUpload,
+  FileText,
+  Info,
+  LogOut,
+  MessageSquarePlus,
+  Moon,
+  Trash2,
+  Lock,
+} from "lucide-react-native";
+import { useState } from "react";
+import Card from "../../components/ui/Card";
+import { useTheme } from "../../context/themeContext";
+import { Link, useRouter } from "expo-router";
+import { ThemeColors } from "../../constants/colors";
+import { useAuth } from "../../context/authContext";
+import LogoutDialog from "../../components/logout-modal";
+import Button from "../../components/ui/Button";
 
 interface SettingItemProps {
   icon: React.ReactNode;
@@ -20,26 +41,38 @@ interface SettingItemProps {
   disabled?: boolean;
 }
 
-function SettingItem({ icon, title, subtitle, onPress, rightElement, disabled = false }: SettingItemProps) {
+function SettingItem({
+  icon,
+  title,
+  subtitle,
+  onPress,
+  rightElement,
+  disabled = false,
+}: SettingItemProps) {
   const { theme } = useTheme();
   const styles = createStyles(theme);
 
   return (
-    <TouchableOpacity 
-      style={[styles.settingItem, disabled && styles.disabledItem]} 
+    <TouchableOpacity
+      style={[styles.settingItem, disabled && styles.disabledItem]}
       onPress={onPress}
       disabled={disabled || !onPress}
     >
       <View style={styles.settingIcon}>{icon}</View>
       <View style={styles.settingContent}>
-        <Text weight="medium" style={disabled ? styles.disabledText : {}}>{title}</Text>
+        <Text weight="medium" style={disabled ? styles.disabledText : {}}>
+          {title}
+        </Text>
         {subtitle && (
-          <Text variant="caption" color={disabled ? 'disabled' : 'secondary'}>
+          <Text variant="caption" color={disabled ? "disabled" : "secondary"}>
             {subtitle}
           </Text>
         )}
       </View>
-      {rightElement || (onPress && !disabled && <ChevronRight size={20} color={theme.text.secondary} />)}
+      {rightElement ||
+        (onPress && !disabled && (
+          <ChevronRight size={20} color={theme.text.secondary} />
+        ))}
       {disabled && <Lock size={16} color={theme.text.disabled} />}
     </TouchableOpacity>
   );
@@ -49,13 +82,13 @@ export default function SettingsScreen() {
   const { theme, isDarkMode, toggleTheme } = useTheme();
   const styles = createStyles(theme);
   const [notifications, setNotifications] = useState(true);
-  const router = useRouter()
-  const { signOut, loading, signIn, user } = useAuth()
+  const router = useRouter();
+  const { signOut, loading, signIn, user } = useAuth();
 
-  const [logutDialogue, setLogoutDialogue] = useState(false)
+  const [logutDialogue, setLogoutDialogue] = useState(false);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
         <Text variant="h1" weight="bold">
           Settings
@@ -91,7 +124,12 @@ export default function SettingsScreen() {
                   title="Continue with Google"
                   variant="primary"
                   onPress={signIn}
-                  leftIcon={<Image source={require('../../assets/icons/google-icon.png')} style={styles.googleIcon} />}
+                  leftIcon={
+                    <Image
+                      source={require("../../assets/icons/google-icon.png")}
+                      style={styles.googleIcon}
+                    />
+                  }
                   disabled={loading}
                   style={styles.loginButton}
                 />
@@ -100,8 +138,65 @@ export default function SettingsScreen() {
           </View>
         </Card>
 
+        <Text
+          variant="h4"
+          weight="medium"
+          color="secondary"
+          style={styles.sectionTitle}
+        >
+          Data Management
+        </Text>
+
+        <View style={styles.dataManagementContainer}>
+          <Card variant="outline" style={styles.card}>
+            {!user && (
+              <View style={styles.overlayContainer}>
+                <View style={styles.overlay} />
+                <View style={styles.overlayContent}>
+                  <Lock size={24} color={theme.text.secondary} />
+                  <Text weight="medium" style={styles.overlayText}>
+                    Login to use this feature
+                  </Text>
+                </View>
+              </View>
+            )}
+            <SettingItem
+              icon={
+                <CloudUpload
+                  size={20}
+                  color={user ? theme.primary : theme.text.disabled}
+                />
+              }
+              title="Backup to Google Drive"
+              subtitle="Securely store your data"
+              onPress={user ? () => router.push("/(modals)/backup") : undefined}
+              disabled={!user}
+            />
+
+            <SettingItem
+              icon={
+                <CloudDownload
+                  size={20}
+                  color={user ? theme.primary : theme.text.disabled}
+                />
+              }
+              title="Restore from Backup"
+              subtitle="Recover your previous data"
+              onPress={
+                user ? () => router.push("/(modals)/restore") : undefined
+              }
+              disabled={!user}
+            />
+          </Card>
+        </View>
+
         <Card variant="outline" style={styles.card}>
-          <Text variant="label" weight="medium" color="secondary" style={styles.sectionTitle}>
+          <Text
+            variant="label"
+            weight="medium"
+            color="secondary"
+            style={styles.sectionTitle}
+          >
             Preferences
           </Text>
           <SettingItem
@@ -112,7 +207,7 @@ export default function SettingsScreen() {
                 value={notifications}
                 onValueChange={setNotifications}
                 trackColor={{ false: theme.border, true: theme.primaryLight }}
-                thumbColor={notifications ? theme.primary : '#f4f3f4'}
+                thumbColor={notifications ? theme.primary : "#f4f3f4"}
               />
             }
           />
@@ -124,46 +219,18 @@ export default function SettingsScreen() {
                 value={isDarkMode}
                 onValueChange={toggleTheme}
                 trackColor={{ false: theme.border, true: theme.primaryLight }}
-                thumbColor={isDarkMode ? theme.primary : '#f4f3f4'}
+                thumbColor={isDarkMode ? theme.primary : "#f4f3f4"}
               />
             }
           />
         </Card>
 
-        <Text variant="h4" weight="medium" color="secondary" style={styles.sectionTitle}>
-          Data Management
-        </Text>
-
-        <View style={styles.dataManagementContainer}>
-          <Card variant="outline" style={styles.card}>
-            {!user && (
-              <View style={styles.overlayContainer}>
-                <View style={styles.overlay} />
-                <View style={styles.overlayContent}>
-                  <Lock size={24} color={theme.text.secondary} />
-                  <Text weight="medium" style={styles.overlayText}>Login to use this feature</Text>
-                </View>
-              </View>
-            )}
-            <SettingItem
-              icon={<CloudUpload size={20} color={user ? theme.primary : theme.text.disabled} />}
-              title="Backup to Google Drive"
-              subtitle="Securely store your data"
-              onPress={user ? () => router.push('/(modals)/backup') : undefined}
-              disabled={!user}
-            />
-
-            <SettingItem
-              icon={<CloudDownload size={20} color={user ? theme.primary : theme.text.disabled} />}
-              title="Restore from Backup"
-              subtitle="Recover your previous data"
-              onPress={user ? () => router.push('/(modals)/restore') : undefined}
-              disabled={!user}
-            />
-          </Card>
-        </View>
-
-        <Text variant="h4" weight="medium" color="secondary" style={styles.sectionTitle}>
+        <Text
+          variant="h4"
+          weight="medium"
+          color="secondary"
+          style={styles.sectionTitle}
+        >
           Help & Support
         </Text>
 
@@ -195,7 +262,12 @@ export default function SettingsScreen() {
 
         {user && (
           <>
-            <Text variant="h4" weight="medium" color="secondary" style={styles.sectionTitle}>
+            <Text
+              variant="h4"
+              weight="medium"
+              color="secondary"
+              style={styles.sectionTitle}
+            >
               Account
             </Text>
 
@@ -236,11 +308,11 @@ const createStyles = (theme: ThemeColors) =>
     },
     header: {
       paddingHorizontal: 16,
-      paddingVertical: 8,
     },
     content: {
       flex: 1,
       paddingHorizontal: 16,
+      marginTop: 16,
     },
     sectionTitle: {
       marginTop: 24,
@@ -251,13 +323,13 @@ const createStyles = (theme: ThemeColors) =>
       marginBottom: 8,
     },
     dataManagementContainer: {
-      position: 'relative',
+      position: "relative",
     },
     overlayContainer: {
       ...StyleSheet.absoluteFillObject,
       zIndex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
     },
     overlay: {
       ...StyleSheet.absoluteFillObject,
@@ -268,17 +340,17 @@ const createStyles = (theme: ThemeColors) =>
       backgroundColor: theme.card,
       padding: 16,
       borderRadius: 8,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
     },
     overlayText: {
       marginLeft: 8,
       color: theme.text.primary,
     },
     menuItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       paddingVertical: 12,
       borderBottomWidth: 1,
       borderBottomColor: theme.border,
@@ -291,8 +363,8 @@ const createStyles = (theme: ThemeColors) =>
       marginVertical: 24,
     },
     settingItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       paddingVertical: 12,
       borderBottomWidth: 1,
       borderBottomColor: theme.border,
@@ -306,7 +378,7 @@ const createStyles = (theme: ThemeColors) =>
     settingIcon: {
       marginRight: 12,
       width: 24,
-      alignItems: 'center',
+      alignItems: "center",
     },
     settingContent: {
       flex: 1,
@@ -316,10 +388,11 @@ const createStyles = (theme: ThemeColors) =>
       borderRadius: 12,
       backgroundColor: theme.card,
       marginBottom: 24,
+      marginTop: 16,
     },
     profileHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       marginBottom: 16,
     },
     avatar: {
@@ -339,8 +412,8 @@ const createStyles = (theme: ThemeColors) =>
       fontSize: 14,
     },
     loadingContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
     },
     loadingText: {
       marginLeft: 10,
@@ -348,15 +421,15 @@ const createStyles = (theme: ThemeColors) =>
     },
     loginContainer: {
       flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     },
     loginText: {
       marginBottom: 8,
       color: theme.text.secondary,
     },
     loginButton: {
-      alignSelf: 'center',
+      alignSelf: "center",
     },
     googleIcon: {
       width: 18,

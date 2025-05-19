@@ -7,14 +7,13 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
-import { useRouter } from "expo-router";
-import Input from "../../components/ui/Input";
-import Text from "../../components/ui/Text";
-import Button from "../../components/ui/Button";
-import { useTheme } from "../../context/themeContext";
-import { createJob } from "../../utils/storage";
-import { jobStatusEnum } from "../../constants/jobStatus";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import Text from "../../../../components/ui/Text";
+import Button from "../../../../components/ui/Button";
+import { useTheme } from "../../../../context/themeContext";
+import { jobStatusEnum } from "../../../../constants/jobStatus";
 import {
   Building2,
   BriefcaseIcon,
@@ -25,12 +24,14 @@ import {
   User,
   Mail,
 } from "lucide-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
 import { Picker } from "@react-native-picker/picker";
-import { ThemeColors } from "../../constants/colors";
-import { useJobs } from "../../context/jobContext";
+import { ThemeColors } from "../../../../constants/colors";
+import { useJobs } from "../../../../context/jobContext";
+import Input from "../../../../components/ui/Input";
+import { JobApplication } from "../../../../types/jobs";
 
 const jobSchema = z.object({
   company: z.string().min(1, "Company name is required"),
@@ -40,7 +41,7 @@ const jobSchema = z.object({
   dateApplied: z.string().nonempty("Date applied is required"),
   status: jobStatusEnum,
   url: z.string().url("Invalid URL").optional().or(z.literal("")),
-  followUpDate: z.string(),
+  followUpDate: z.string().optional().or(z.literal("")),
   notes: z.string().optional(),
   contactPerson: z.string().optional(),
   contactEmail: z.string().email("Invalid email").optional().or(z.literal("")),
@@ -48,18 +49,22 @@ const jobSchema = z.object({
 
 type JobFormData = z.infer<typeof jobSchema>;
 
-export default function NewJobModal() {
+export default function EditJobModal() {
   const { theme } = useTheme();
   const router = useRouter();
   const styles = createStyles(theme);
-  const { addJobFromContext } = useJobs();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { jobs, handleUpdateJob } = useJobs();
+  const [job, setJob] = useState<JobApplication | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showFollowUpDatePicker, setShowFollowUpDatePicker] = useState(false);
 
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
-    register,
+    reset,
     watch,
   } = useForm<JobFormData>({
     resolver: zodResolver(jobSchema),
@@ -71,51 +76,68 @@ export default function NewJobModal() {
       dateApplied: new Date().toISOString().substring(0, 10),
       status: "applied",
       url: "",
-      followUpDate: new Date().toISOString().substring(0, 10),
+      followUpDate: "".substring(0, 10),
       notes: "",
       contactPerson: "",
       contactEmail: "",
     },
   });
 
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showFollowUpDatePicker, setShowFollowUpDatePicker] = useState(false);
+  useEffect(() => {
+    const found = jobs.find((j) => j.id === id);
+    if (found) {
+      setJob(found);
+    }
+  }, [id, jobs]);
+
+  useEffect(() => {
+    if (job) {
+      reset({
+        company: job.company,
+        role: job.role,
+        location: job.location,
+        salary: job.salary,
+        dateApplied: job.dateApplied.substring(0, 10),
+        status: job.status,
+        url: job.url,
+        followUpDate: job?.followUpDate,
+        notes: job.notes,
+        contactPerson: job.contactPerson,
+        contactEmail: job.contactEmail,
+      });
+    }
+  }, [job, reset]);
+
+  const onSubmit = async (values: JobFormData) => {
+    if (!job) return;
+    try {
+      const updatedJob = {
+        ...job,
+        ...values,
+        dateApplied: new Date(values.dateApplied).toISOString(),
+      };
+
+      await handleUpdateJob(updatedJob);
+      router.back();
+    } catch (err) {
+      console.error("Failed to update job:", err);
+    }
+  };
 
   const rawDateApplied = watch("dateApplied");
 
-  const dateAppliedValue = rawDateApplied
-    ? new Date(rawDateApplied)
-    : new Date();
+  const rawFollowUpDate = watch("followUpDate");
+  const followUpValue = rawFollowUpDate ? new Date(rawFollowUpDate) : undefined;
 
-  const onChangeDate = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      setValue("dateApplied", selectedDate.toDateString());
-    }
-  };
-
-  const followUpValue = rawDateApplied ? new Date(rawDateApplied) : new Date();
-
-  const onChangeFollowUpDate = (event: any, selectedDate?: Date) => {
-    setShowFollowUpDatePicker(false);
-    if (selectedDate) {
-      setValue("followUpDate", selectedDate.toDateString());
-    }
-  };
-
-  const onSubmit = async (values: JobFormData) => {
-    try {
-      const newJob = createJob({
-        ...values,
-        dateApplied: new Date(values.dateApplied).toISOString(),
-      });
-
-      await addJobFromContext(newJob);
-      router.back();
-    } catch (err) {
-      console.error("Failed to save job:", err);
-    }
-  };
+  if (!job) {
+    return (
+      <ActivityIndicator
+        style={{ flex: 1 }}
+        size="large"
+        color={theme.primary}
+      />
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -127,8 +149,9 @@ export default function NewJobModal() {
         contentContainerStyle={styles.contentContainer}
       >
         <Text variant="h3" weight="bold" style={styles.title}>
-          Add New Job Application
+          Edit Job Application
         </Text>
+
         <Controller
           control={control}
           name="company"
@@ -191,37 +214,39 @@ export default function NewJobModal() {
             />
           )}
         />
+
         <Input
           label="Date Applied"
-          value={dateAppliedValue ? format(dateAppliedValue, "yyyy-MM-dd") : ""}
+          value={format(new Date(rawDateApplied), "yyyy-MM-dd")}
           onPressIn={() => setShowDatePicker(true)}
           leftIcon={<Calendar size={20} color={theme.text.secondary} />}
           showSoftInputOnFocus={false}
           pointerEvents="none"
         />
-
         {showDatePicker && (
           <DateTimePicker
-            value={dateAppliedValue || new Date()}
+            value={new Date(rawDateApplied)}
             mode="date"
             display="default"
-            onChange={onChangeDate}
-            maximumDate={new Date()}
+            onChange={(e, selected) => {
+              setShowDatePicker(false);
+              if (selected) setValue("dateApplied", selected.toISOString());
+            }}
           />
         )}
 
         <Controller
           control={control}
           name="status"
-          render={({ field: { onChange, value } }) => (
+          render={({ field }) => (
             <View style={styles.inputWrapper}>
               <Text variant="label" style={styles.label}>
                 Status
               </Text>
               <View style={styles.pickerContainer}>
                 <Picker
-                  selectedValue={value}
-                  onValueChange={onChange}
+                  selectedValue={field.value}
+                  onValueChange={field.onChange}
                   style={styles.picker}
                   dropdownIconColor={theme.text.secondary}
                 >
@@ -236,6 +261,7 @@ export default function NewJobModal() {
             </View>
           )}
         />
+
         <Controller
           control={control}
           name="url"
@@ -253,24 +279,27 @@ export default function NewJobModal() {
             />
           )}
         />
+
         <Input
-          label="Follow-up  Date"
+          label="Follow-up Date (Optional)"
           value={followUpValue ? format(followUpValue, "yyyy-MM-dd") : ""}
           onPressIn={() => setShowFollowUpDatePicker(true)}
           leftIcon={<Calendar size={20} color={theme.text.secondary} />}
           showSoftInputOnFocus={false}
           pointerEvents="none"
         />
-
         {showFollowUpDatePicker && (
           <DateTimePicker
             value={followUpValue || new Date()}
             mode="date"
             display="default"
-            onChange={onChangeFollowUpDate}
-            maximumDate={new Date()}
+            onChange={(e, selected) => {
+              setShowFollowUpDatePicker(false);
+              if (selected) setValue("followUpDate", selected.toISOString());
+            }}
           />
         )}
+
         <Controller
           control={control}
           name="contactPerson"
@@ -329,7 +358,7 @@ export default function NewJobModal() {
             style={styles.cancelButton}
           />
           <Button
-            title="Save Application"
+            title="Update Application"
             onPress={handleSubmit(onSubmit)}
             isLoading={isSubmitting}
             style={styles.saveButton}
@@ -354,16 +383,6 @@ const createStyles = (theme: ThemeColors) =>
       marginBottom: 24,
       color: theme.text.primary,
     },
-    form: {
-      backgroundColor: theme.card,
-      borderRadius: 12,
-      padding: 16,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
-      shadowRadius: 8,
-      elevation: 2,
-    },
     textArea: {
       height: 100,
       textAlignVertical: "top",
@@ -385,13 +404,11 @@ const createStyles = (theme: ThemeColors) =>
     inputWrapper: {
       marginBottom: 16,
     },
-
     label: {
       color: theme.text.primary,
       marginBottom: 6,
       fontSize: 16,
     },
-
     pickerContainer: {
       borderWidth: 1,
       borderColor: theme.border,
@@ -399,14 +416,9 @@ const createStyles = (theme: ThemeColors) =>
       backgroundColor: theme.background,
       overflow: "hidden",
     },
-
     picker: {
       color: theme.text.primary,
       height: 48,
       paddingHorizontal: 10,
-    },
-    pickerItem: {
-      color: theme.text.primary,
-      fontSize: 16,
     },
   });

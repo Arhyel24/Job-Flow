@@ -1,8 +1,8 @@
-import { useTheme } from '../context/themeContext';
-import Text from '../components/ui/Text';
-import Toast from 'react-native-toast-message';
-import { StyleSheet, View } from 'react-native';
-import { CheckCircle, AlertCircle } from 'lucide-react-native';
+import { useTheme } from "../context/themeContext";
+import Text from "../components/ui/Text";
+import Toast from "react-native-toast-message";
+import { StyleSheet, View } from "react-native";
+import { CheckCircle, AlertCircle } from "lucide-react-native";
 
 export default function ThemedToast() {
   const { theme } = useTheme();
@@ -33,13 +33,13 @@ export default function ThemedToast() {
 
 const styles = StyleSheet.create({
   toastContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 15,
     borderRadius: 8,
     marginHorizontal: 20,
     marginTop: 40,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -50,12 +50,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   text1: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
     fontSize: 16,
   },
   text2: {
-    color: 'white',
+    color: "white",
     fontSize: 14,
     marginTop: 2,
   },

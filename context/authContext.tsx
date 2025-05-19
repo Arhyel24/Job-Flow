@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import * as SecureStorage from "expo-secure-store";
 import * as AuthSession from "expo-auth-session";
 import getAccessToken from "../utils/token";
+import Toast from "react-native-toast-message";
+import * as WebBrowser from "expo-web-browser";
 
 export type GoogleUser = {
   sub: string;
@@ -18,17 +20,28 @@ type AuthContextType = {
   accessToken: string | null;
 };
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
 
-const CLIENT_ID = process.env.GOOGLE_ANDROID_CLIENT_ID!;
+const CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!;
+
+WebBrowser.maybeCompleteAuthSession();
 
 const discovery = {
-  authorizationEndpoint: "",
-  tokenEndpoint: "",
-  revocationEndpoint: ""
+  authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+  tokenEndpoint: "https://oauth2.googleapis.com/token",
+  revocationEndpoint: "https://oauth2.googleapis.com/revoke",
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const redirectUri = AuthSession.makeRedirectUri({
+  scheme: "jobflow",
+  preferLocalhost: true,
+});
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<GoogleUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -40,18 +53,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         "openid",
         "profile",
         "email",
-        "https://www.googleapis.com/auth/drive.appdata"
+        "https://www.googleapis.com/auth/drive.appdata",
       ],
-      redirectUri: AuthSession.makeRedirectUri(),
+      redirectUri: redirectUri,
     },
     discovery
   );
 
-  // 🔧 FIXED: Immediate call of the async function
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const token = await getAccessToken()
+        const token = await getAccessToken();
         const userJson = await SecureStorage.getItemAsync("user");
 
         if (token && userJson) {
@@ -117,9 +129,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async () => {
     setLoading(true);
     try {
+      console.log("Redirect URI:", redirectUri);
       await promptAsync();
     } catch (e) {
+      if ((e as Error).message.includes("No matching browser activity")) {
+        // Fallback or show user-friendly message
+        Toast.show({
+          type: "error",
+          text1: "Sign-in Error",
+          text2:
+            "No browser available to complete sign-in. Please install a browser app.",
+        });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "SignIn Error",
+          text2: (e as Error).message,
+        });
+      }
       console.error("Sign-in error:", e);
+    } finally {
       setLoading(false);
     }
   };
@@ -139,7 +168,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut, accessToken }}>
+    <AuthContext.Provider
+      value={{ user, loading, signIn, signOut, accessToken }}
+    >
       {children}
     </AuthContext.Provider>
   );

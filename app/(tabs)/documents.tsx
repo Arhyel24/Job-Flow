@@ -1,254 +1,128 @@
-import { useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Platform, Linking } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import * as DocumentPicker from 'expo-document-picker';
-import { FileText, Upload, Eye, Download, Lock, FileUp, FileImage, ExternalLink } from 'lucide-react-native';
-import Text from '../../components/ui/Text';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import { useTheme } from '../../context/themeContext';
-import { ThemeColors } from '../../constants/colors';
-import { useRouter } from 'expo-router';
-
-interface Document {
-  id: string;
-  name: string;
-  type: string;
-  size: number;
-  uri: string;
-}
-
-const DOCUMENT_TYPES = [
-  {
-    id: 'resume',
-    title: 'Upload Resume (PDF)',
-    description: 'Store your resume for this application',
-    icon: FileUp
-  },
-  {
-    id: 'cover-letter',
-    title: 'Cover Letter',
-    description: 'Attach or generate a cover letter',
-    icon: FileText
-  },
-  {
-    id: 'job-description',
-    title: 'Job Description',
-    description: 'Screenshot or PDF of job posting',
-    icon: FileImage
-  }
-];
+import { useState } from "react";
+import { StyleSheet, View, ScrollView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "../../context/themeContext";
+import Text from "../../components/ui/Text";
+import { ThemeColors } from "../../constants/colors";
+import { Document } from "../../types/document";
+import DocumentListView from "../../components/documents/DocumentListView";
+import { useDocuments } from "../../context/documentContext";
+import * as DocumentPicker from "expo-document-picker";
+import { useRouter } from "expo-router";
 
 export default function DocumentsScreen() {
   const { theme } = useTheme();
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const styles = createStyles(theme);
-  const router = useRouter()
+  const router = useRouter();
+
+  const { documents, addDocument } = useDocuments();
 
   const handleDocumentPick = async (type: string) => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'image/*'],
+        type: ["application/pdf", "image/*"],
         copyToCacheDirectory: true,
       });
 
       if (result.assets?.[0]) {
         const asset = result.assets[0];
-        setDocuments(prev => [...prev, {
+        addDocument({
           id: Date.now().toString(),
           name: asset.name,
-          type: asset.mimeType || 'application/pdf',
+          type: asset.mimeType || "application/pdf",
           size: asset.size || 0,
           uri: asset.uri,
-        }]);
+          date: new Date().toISOString().split("T")[0],
+          category: type,
+        });
       }
     } catch (error) {
-      console.error('Error picking document:', error);
+      console.error("Error picking document:", error);
     }
   };
 
-  const handlePreview = (document: Document) => {
-    Platform.OS === 'web' 
-      ? window.open(document.uri, '_blank')
-      : Linking.openURL(document.uri); // TODO: Implement proper native preview
-  };
-
-  const handleDownload = (document: Document) => {
-    // TODO: Implement download functionality
-  };
+  const handlePreview = (doc: Document) => console.log("Preview", doc.name);
+  const handleDownload = (doc: Document) => console.log("Download", doc.name);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
+    <SafeAreaView style={styles(theme).container} edges={["top"]}>
+      <View style={styles(theme).header}>
         <Text variant="h1" weight="bold">
           Documents
         </Text>
       </View>
 
-      <ScrollView style={styles.content}>
-        <Card variant="elevated" style={styles.uploadSection}>
-          <Text variant="h3" weight="bold" style={styles.sectionTitle}>
-            Add Documents
-          </Text>
-          
-          {DOCUMENT_TYPES.map((docType) => (
-            <TouchableOpacity
-              key={docType.id}
-              style={styles.documentTypeCard}
-              onPress={() => handleDocumentPick(docType.id)}
-            >
-              <View style={styles.documentTypeContent}>
-                <docType.icon size={24} color={theme.primary} />
-                <View style={styles.documentTypeText}>
-                  <Text weight="medium">{docType.title}</Text>
-                  <Text variant="caption" color="secondary">
-                    {docType.description}
-                  </Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </Card>
-
-        {documents.length > 0 ? (
-          <Card variant="elevated" style={styles.documentsSection}>
-            <Text variant="h3" weight="bold" style={styles.sectionTitle}>
-              Your Documents
-            </Text>
-            {documents.map(doc => (
-              <View key={doc.id} style={styles.documentItem}>
-                <View style={styles.documentInfo}>
-                  <FileText size={20} color={theme.primary} />
-                  <View style={styles.documentDetails}>
-                    <Text numberOfLines={1}>{doc.name}</Text>
-                    <Text variant="caption" color="secondary">
-                      {(doc.size / 1024).toFixed(1)} KB
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.documentActions}>
-                  <TouchableOpacity
-                    onPress={() => handlePreview(doc)}
-                    style={styles.actionButton}
-                  >
-                    <Eye size={20} color={theme.primary} />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleDownload(doc)}
-                    style={styles.actionButton}
-                  >
-                    <Download size={20} color={theme.primary} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
-          </Card>
-        ) : (
-          <Card variant="elevated" style={styles.emptyState}>
-            <Lock size={48} color={theme.text.secondary} />
-            <Text variant="h3" weight="bold" style={styles.emptyTitle}>
-              No Documents Yet
-            </Text>
-            <Text color="secondary" align="center">
-              Upload your first document to get started
-            </Text>
-            <Button
-              title="Upload Document"
-              onPress={() => handleDocumentPick('resume')}
-              style={styles.ctaButton}
-            />
-          </Card>
-        )}
-
-        <View style={styles.previewOptions}>
-          <Text variant="h4" weight="medium" style={styles.previewTitle}>
-            Preview Options
-          </Text>
-          <View style={styles.previewButtons}>
-            <Button
-              variant="outline"
-              title="In-App Preview"
-              leftIcon={<Eye size={16} color={theme.primary} />}
-              onPress={() => {}}
-              style={styles.previewButton}
-            />
-            <Button
-              variant="outline"
-              title="Open Externally"
-              leftIcon={<ExternalLink size={16} color={theme.primary} />}
-              onPress={() => {}}
-              style={styles.previewButton}
-            />
-          </View>
-        </View>
+      <ScrollView style={styles(theme).content}>
+        <DocumentListView
+          documents={documents}
+          onUpload={handleDocumentPick}
+          onPreview={handlePreview}
+          onDownload={handleDownload}
+          onWizardStart={() => router.push("/(modals)/wizard")}
+        />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const createStyles = (theme: ThemeColors) => 
+const styles = (theme: ThemeColors) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: theme.background,
     },
-    header: {
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-    },
     content: {
       flex: 1,
       paddingHorizontal: 16,
     },
-    uploadSection: {
-      marginBottom: 16,
-      padding: 16,
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: 16,
     },
-    documentsSection: {
-      marginBottom: 16,
-      padding: 16,
+    viewToggleActive: {
+      backgroundColor: theme.primary,
     },
-    sectionTitle: {
-      marginBottom: 16,
-    },
-    documentTypeCard: {
-      marginBottom: 12,
-    },
-    documentTypeContent: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: 12,
-    },
-    documentTypeText: {
+    listContainer: {
       flex: 1,
-      marginLeft: 12,
+    },
+    documentsCard: {
+      marginBottom: 16,
     },
     documentItem: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingVertical: 12,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: 16,
       borderBottomWidth: 1,
       borderBottomColor: theme.border,
     },
     documentInfo: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       flex: 1,
     },
     documentDetails: {
       flex: 1,
       marginLeft: 12,
     },
+    documentName: {
+      marginBottom: 4,
+    },
+    documentMeta: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+    },
     documentActions: {
-      flexDirection: 'row',
+      flexDirection: "row",
+      alignItems: "center",
     },
     actionButton: {
       padding: 8,
-      marginLeft: 4,
+      marginRight: 8,
     },
     emptyState: {
-      alignItems: 'center',
+      alignItems: "center",
       padding: 24,
       marginBottom: 16,
     },
@@ -259,17 +133,22 @@ const createStyles = (theme: ThemeColors) =>
       marginTop: 16,
       minWidth: 200,
     },
-    previewOptions: {
+    actionsContainer: {
       marginBottom: 24,
     },
-    previewTitle: {
+    sectionTitle: {
+      marginBottom: 16,
+    },
+    documentTypeCard: {
       marginBottom: 12,
     },
-    previewButtons: {
-      flexDirection: 'row',
-      gap: 12,
+    documentTypeContent: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 12,
     },
-    previewButton: {
+    documentTypeText: {
       flex: 1,
+      marginLeft: 12,
     },
   });

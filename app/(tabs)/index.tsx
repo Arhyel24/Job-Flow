@@ -1,18 +1,18 @@
-import { useState } from 'react';
-import { ScrollView, StyleSheet, View, RefreshControl } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Text from '../../components/ui/Text';
-import ProgressChart from '../../components/dashboard/ProgressChart';
-import UpcomingReminders from '../../components/dashboard/UpcomingReminders';
-import { useTheme } from '../../context/themeContext';
-import { ThemeColors } from '../../constants/colors';
-import { useJobs } from '../../context/jobContext';
+import { useState } from "react";
+import { ScrollView, StyleSheet, View, RefreshControl } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Text from "../../components/ui/Text";
+import ProgressChart from "../../components/dashboard/ProgressChart";
+import UpcomingReminders from "../../components/dashboard/UpcomingReminders";
+import { useTheme } from "../../context/themeContext";
+import { ThemeColors } from "../../constants/colors";
+import { useJobs } from "../../context/jobContext";
 
 export default function Dashboard() {
   const [refreshing, setRefreshing] = useState(false);
-  const { theme } = useTheme()
-  const styles = createStyles(theme)
-  const { jobs, refreshJobs } = useJobs()
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
+  const { jobs, refreshJobs } = useJobs();
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -21,8 +21,8 @@ export default function Dashboard() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView 
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -51,10 +51,10 @@ export default function Dashboard() {
               Total Applications
             </Text>
           </View>
-          
+
           <View style={styles.statCard}>
             <Text variant="h1" weight="bold" color="success">
-              {jobs.filter(job => job.status === 'accepted').length}
+              {jobs.filter((job) => job.status === "accepted").length}
             </Text>
             <Text variant="label" color="secondary">
               Accepted Offers
@@ -82,10 +82,9 @@ const createStyles = (theme: ThemeColors) => {
       padding: 16,
     },
     header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginTop: 8,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
       marginBottom: 8,
     },
     title: {
@@ -95,7 +94,7 @@ const createStyles = (theme: ThemeColors) => {
       marginBottom: 24,
     },
     statsContainer: {
-      flexDirection: 'row',
+      flexDirection: "row",
       marginBottom: 16,
     },
     statCard: {
@@ -104,7 +103,7 @@ const createStyles = (theme: ThemeColors) => {
       borderRadius: 12,
       padding: 16,
       marginHorizontal: 6,
-      alignItems: 'center',
+      alignItems: "center",
       shadowColor: theme.border,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.05,
@@ -112,20 +111,20 @@ const createStyles = (theme: ThemeColors) => {
       elevation: 2,
     },
     fab: {
-      position: 'absolute',
+      position: "absolute",
       bottom: 24,
       right: 24,
       width: 56,
       height: 56,
       borderRadius: 28,
       backgroundColor: theme.primary,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       elevation: 4,
       shadowColor: theme.border,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.25,
       shadowRadius: 4,
     },
-  })
-}
+  });
+};

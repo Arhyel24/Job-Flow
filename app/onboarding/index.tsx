@@ -1,41 +1,52 @@
-import { useState, useRef } from 'react';
-import { View, StyleSheet, Dimensions, FlatList, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
-import { FileText, CheckCircle2, Timer } from 'lucide-react-native';
-import Text from '../../components/ui/Text';
-import Button from '../../components/ui/Button';
-import { lightThemeColors as colors, ThemeColors } from '../../constants/colors';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTheme } from '../../context/themeContext';
+import { useState, useRef } from "react";
+import {
+  View,
+  StyleSheet,
+  Dimensions,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { FileText, CheckCircle2, Timer } from "lucide-react-native";
+import Text from "../../components/ui/Text";
+import Button from "../../components/ui/Button";
+import {
+  lightThemeColors as colors,
+  ThemeColors,
+} from "../../constants/colors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTheme } from "../../context/themeContext";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 const slides = [
   {
-    id: '1',
-    title: 'Track your job applications in one place',
-    description: 'Keep all your job applications organized and never miss an opportunity',
+    id: "1",
+    title: "Track your job applications in one place",
+    description:
+      "Keep all your job applications organized and never miss an opportunity",
     icon: <FileText size={80} color={colors.primary} />,
   },
   {
-    id: '2',
-    title: 'Stay organized and follow up easily',
-    description: 'Get reminders for follow-ups and keep track of your application status',
+    id: "2",
+    title: "Stay organized and follow up easily",
+    description:
+      "Get reminders for follow-ups and keep track of your application status",
     icon: <CheckCircle2 size={80} color={colors.primary} />,
   },
   {
-    id: '3',
-    title: 'Get Notified on your job applications.',
-    description: 'Never miss to check on your job applications and have fun',
+    id: "3",
+    title: "Get Notified on your job applications.",
+    description: "Never miss to check on your job applications and have fun",
     icon: <Timer size={80} color={colors.primary} />,
   },
 ];
 
 const completeOnboarding = async () => {
   try {
-    await AsyncStorage.setItem('@onboarding_completed', 'true');
+    await AsyncStorage.setItem("@onboarding_completed", "true");
   } catch (error) {
-    console.error('Error saving onboarding status:', error);
+    console.error("Error saving onboarding status:", error);
   }
 };
 
@@ -43,10 +54,10 @@ export default function Onboarding() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const router = useRouter();
-  const { theme } = useTheme()
-  const styles = createStyles(theme)
+  const { theme } = useTheme();
+  const styles = createStyles(theme);
 
-  const renderItem = ({ item }: { item: typeof slides[0] }) => (
+  const renderItem = ({ item }: { item: (typeof slides)[0] }) => (
     <View style={styles.slide}>
       <View style={styles.iconContainer}>{item.icon}</View>
       <Text variant="h2" weight="bold" style={styles.title}>
@@ -66,8 +77,8 @@ export default function Onboarding() {
       });
       setCurrentIndex(currentIndex + 1);
     } else {
-      await completeOnboarding()
-      router.replace('/(tabs)/jobs');
+      await completeOnboarding();
+      router.replace("/(tabs)/jobs");
     }
   };
 
@@ -100,14 +111,14 @@ export default function Onboarding() {
         </View>
 
         <Button
-          title={currentIndex === slides.length - 1 ? 'Get Started' : 'Next'}
+          title={currentIndex === slides.length - 1 ? "Get Started" : "Next"}
           onPress={handleNext}
           style={styles.button}
         />
 
         {currentIndex < slides.length - 1 && (
           <TouchableOpacity
-            onPress={() => router.replace('/(tabs)/jobs')}
+            onPress={() => router.replace("/(tabs)/jobs")}
             style={styles.skipButton}
           >
             <Text color="secondary">Skip</Text>
@@ -127,8 +138,8 @@ const createStyles = (theme: ThemeColors) => {
     slide: {
       width,
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       paddingHorizontal: 24,
     },
     iconContainer: {
@@ -136,25 +147,25 @@ const createStyles = (theme: ThemeColors) => {
       height: 160,
       borderRadius: 80,
       backgroundColor: theme.primaryLight,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       marginBottom: 40,
     },
     title: {
-      textAlign: 'center',
+      textAlign: "center",
       marginBottom: 16,
       paddingHorizontal: 20,
     },
     description: {
-      textAlign: 'center',
+      textAlign: "center",
       paddingHorizontal: 20,
     },
     footer: {
       padding: 24,
     },
     pagination: {
-      flexDirection: 'row',
-      justifyContent: 'center',
+      flexDirection: "row",
+      justifyContent: "center",
       marginBottom: 24,
     },
     paginationDot: {
@@ -172,7 +183,7 @@ const createStyles = (theme: ThemeColors) => {
       marginBottom: 16,
     },
     skipButton: {
-      alignItems: 'center',
+      alignItems: "center",
     },
-  })
-}
+  });
+};

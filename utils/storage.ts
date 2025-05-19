@@ -1,13 +1,12 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { JobApplication } from '../types/jobs';
-import uuid from 'react-native-uuid';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { JobApplication } from "../types/jobs";
+import uuid from "react-native-uuid";
 
-// Storage keys
-const JOBS_STORAGE_KEY = 'jobtracker_jobs';
-const LAST_SYNC_KEY = 'jobtracker_last_sync';
-const PENDING_CHANGES_KEY = 'jobtracker_pending_changes';
+const JOBS_STORAGE_KEY = "jobtracker_jobs";
+const LAST_SYNC_KEY = "jobtracker_last_sync";
+const PENDING_CHANGES_KEY = "jobtracker_pending_changes";
 
-export function createJob(jobData: Omit<JobApplication, 'id'>): JobApplication {
+export function createJob(jobData: Omit<JobApplication, "id">): JobApplication {
   return {
     id: uuid.v4().toString(),
     ...jobData,
@@ -15,18 +14,17 @@ export function createJob(jobData: Omit<JobApplication, 'id'>): JobApplication {
 }
 
 interface PendingChange {
-  type: 'create' | 'update' | 'delete';
+  type: "create" | "update" | "delete";
   job: JobApplication;
   timestamp: number;
 }
 
-// Local storage functions
 async function getLocalJobs(): Promise<JobApplication[]> {
   try {
     const data = await AsyncStorage.getItem(JOBS_STORAGE_KEY);
     return data ? JSON.parse(data) : [];
   } catch (error) {
-    console.error('Error reading local jobs:', error);
+    console.error("Error reading local jobs:", error);
     return [];
   }
 }
@@ -35,7 +33,7 @@ async function setLocalJobs(jobs: JobApplication[]): Promise<void> {
   try {
     await AsyncStorage.setItem(JOBS_STORAGE_KEY, JSON.stringify(jobs));
   } catch (error) {
-    console.error('Error saving local jobs:', error);
+    console.error("Error saving local jobs:", error);
   }
 }
 
@@ -44,7 +42,7 @@ async function getPendingChanges(): Promise<PendingChange[]> {
     const data = await AsyncStorage.getItem(PENDING_CHANGES_KEY);
     return data ? JSON.parse(data) : [];
   } catch (error) {
-    console.error('Error reading pending changes:', error);
+    console.error("Error reading pending changes:", error);
     return [];
   }
 }
@@ -53,7 +51,7 @@ async function setPendingChanges(changes: PendingChange[]): Promise<void> {
   try {
     await AsyncStorage.setItem(PENDING_CHANGES_KEY, JSON.stringify(changes));
   } catch (error) {
-    console.error('Error saving pending changes:', error);
+    console.error("Error saving pending changes:", error);
   }
 }
 
@@ -70,13 +68,13 @@ export async function addJob(job: JobApplication): Promise<void> {
 
     const pendingChanges = await getPendingChanges();
     pendingChanges.push({
-      type: 'create',
+      type: "create",
       job,
       timestamp: Date.now(),
     });
     await setPendingChanges(pendingChanges);
   } catch (error) {
-    console.error('Error adding job:', error);
+    console.error("Error adding job:", error);
     throw error;
   }
 }
@@ -84,18 +82,18 @@ export async function addJob(job: JobApplication): Promise<void> {
 export async function updateJob(job: JobApplication): Promise<void> {
   try {
     const jobs = await getLocalJobs();
-    const updatedJobs = jobs.map(j => j.id === job.id ? job : j);
+    const updatedJobs = jobs.map((j) => (j.id === job.id ? job : j));
     await setLocalJobs(updatedJobs);
 
     const pendingChanges = await getPendingChanges();
     pendingChanges.push({
-      type: 'update',
+      type: "update",
       job,
       timestamp: Date.now(),
     });
     await setPendingChanges(pendingChanges);
   } catch (error) {
-    console.error('Error updating job:', error);
+    console.error("Error updating job:", error);
     throw error;
   }
 }
@@ -103,21 +101,21 @@ export async function updateJob(job: JobApplication): Promise<void> {
 export async function deleteJob(jobId: string): Promise<void> {
   try {
     const jobs = await getLocalJobs();
-    const jobToDelete = jobs.find(j => j.id === jobId);
+    const jobToDelete = jobs.find((j) => j.id === jobId);
     if (!jobToDelete) return;
 
-    const updatedJobs = jobs.filter(j => j.id !== jobId);
+    const updatedJobs = jobs.filter((j) => j.id !== jobId);
     await setLocalJobs(updatedJobs);
 
     const pendingChanges = await getPendingChanges();
     pendingChanges.push({
-      type: 'delete',
+      type: "delete",
       job: jobToDelete,
       timestamp: Date.now(),
     });
     await setPendingChanges(pendingChanges);
   } catch (error) {
-    console.error('Error deleting job:', error);
+    console.error("Error deleting job:", error);
     throw error;
   }
 }
@@ -130,7 +128,7 @@ export async function clearAllJobs(): Promise<void> {
       PENDING_CHANGES_KEY,
     ]);
   } catch (error) {
-    console.error('Error clearing all jobs:', error);
+    console.error("Error clearing all jobs:", error);
     throw error;
   }
 }

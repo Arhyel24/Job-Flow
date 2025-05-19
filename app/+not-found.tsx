@@ -1,15 +1,15 @@
-import { Link, Stack, useRouter } from 'expo-router';
-import { StyleSheet, Text, View, Animated, Easing } from 'react-native';
-import { useTheme } from '../context/themeContext';
-import { useEffect, useRef } from 'react';
-import { Feather } from '@expo/vector-icons';
-import { ThemeColors } from '../constants/colors';
+import { Link, Stack, useRouter } from "expo-router";
+import { StyleSheet, Text, View, Animated, Easing } from "react-native";
+import { useTheme } from "../context/themeContext";
+import { useEffect, useRef } from "react";
+import { Feather } from "@expo/vector-icons";
+import { ThemeColors } from "../constants/colors";
 
 export default function NotFoundScreen() {
   const { theme } = useTheme();
   const styles = createStyles(theme);
-  const router = useRouter()
-  
+  const router = useRouter();
+
   const bounceValue = useRef(new Animated.Value(0)).current;
   const fadeValue = useRef(new Animated.Value(0)).current;
 
@@ -38,20 +38,20 @@ export default function NotFoundScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Oops!' }} />
+      <Stack.Screen options={{ title: "Oops!" }} />
       <View style={styles.container}>
-        <Animated.View 
+        <Animated.View
           style={[
             styles.iconContainer,
-            { 
+            {
               transform: [{ scale: bounceValue }],
-              opacity: fadeValue 
-            }
+              opacity: fadeValue,
+            },
           ]}
         >
           <Feather name="frown" size={60} color={theme.text.secondary} />
         </Animated.View>
-        
+
         <Animated.View style={{ opacity: fadeValue }}>
           <Text style={styles.title}>404 - Page Not Found</Text>
           <Text style={styles.text}>This screen doesn't exist.</Text>
@@ -59,7 +59,7 @@ export default function NotFoundScreen() {
 
         <Animated.View style={{ opacity: fadeValue }}>
           <Link href="/(tabs)/jobs" asChild>
-            <Animated.View 
+            <Animated.View
               style={styles.link}
               onStartShouldSetResponder={() => true}
               onResponderGrant={() => {
@@ -77,8 +77,12 @@ export default function NotFoundScreen() {
                 }).start();
               }}
             >
-              <Text style={styles.linkText} onPress={() => router.push("/(tabs)/jobs")}>
-                <Feather name="home" size={16} color={theme.primary} /> Go to home screen!
+              <Text
+                style={styles.linkText}
+                onPress={() => router.push("/(tabs)/jobs")}
+              >
+                <Feather name="home" size={16} color={theme.primary} /> Go to
+                home screen!
               </Text>
             </Animated.View>
           </Link>
@@ -92,8 +96,8 @@ const createStyles = (theme: ThemeColors) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
       padding: 20,
       backgroundColor: theme.background,
     },
@@ -102,16 +106,16 @@ const createStyles = (theme: ThemeColors) =>
     },
     title: {
       fontSize: 24,
-      fontWeight: '700',
+      fontWeight: "700",
       color: theme.text.primary,
       marginBottom: 10,
-      textAlign: 'center',
+      textAlign: "center",
     },
     text: {
       fontSize: 18,
-      fontWeight: '500',
+      fontWeight: "500",
       color: theme.text.secondary,
-      textAlign: 'center',
+      textAlign: "center",
       marginBottom: 30,
     },
     link: {
@@ -120,14 +124,14 @@ const createStyles = (theme: ThemeColors) =>
       paddingHorizontal: 24,
       borderRadius: 25,
       backgroundColor: theme.primaryLight,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
     },
     linkText: {
-      color: theme.primary,
+      color: theme.text.primary,
       fontSize: 16,
-      fontWeight: '600',
+      fontWeight: "600",
       marginLeft: 8,
     },
   });

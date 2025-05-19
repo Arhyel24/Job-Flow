@@ -1,11 +1,11 @@
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { format } from 'date-fns';
-import { Bell, ChevronRight } from 'lucide-react-native';
-import Card from '../../components/ui/Card';
-import Text from '../../components/ui/Text';
-import { JobApplication } from '../../types/jobs';
-import { useRouter } from 'expo-router';
-import { useTheme } from '../../context/themeContext';
+import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { format } from "date-fns";
+import { Bell, ChevronRight } from "lucide-react-native";
+import Card from "../../components/ui/Card";
+import Text from "../../components/ui/Text";
+import { JobApplication } from "../../types/jobs";
+import { useRouter } from "expo-router";
+import { useTheme } from "../../context/themeContext";
 
 interface UpcomingRemindersProps {
   jobs: JobApplication[];
@@ -17,7 +17,9 @@ export default function UpcomingReminders({ jobs }: UpcomingRemindersProps) {
   const styles = createStyles(theme);
 
   const jobsWithFollowUps = jobs
-    .filter(job => job.followUpDate && new Date(job.followUpDate) >= new Date())
+    .filter(
+      (job) => job.followUpDate && new Date(job.followUpDate) >= new Date()
+    )
     .sort((a, b) => {
       const dateA = new Date(a.followUpDate || 0);
       const dateB = new Date(b.followUpDate || 0);
@@ -26,7 +28,7 @@ export default function UpcomingReminders({ jobs }: UpcomingRemindersProps) {
     .slice(0, 3);
 
   const handleViewAll = () => {
-    router.push('/(tabs)/jobs');
+    router.push("/(tabs)/jobs");
   };
 
   return (
@@ -44,7 +46,7 @@ export default function UpcomingReminders({ jobs }: UpcomingRemindersProps) {
       </View>
 
       {jobsWithFollowUps.length > 0 ? (
-        jobsWithFollowUps.map(job => (
+        jobsWithFollowUps.map((job) => (
           <TouchableOpacity
             key={job.id}
             style={styles.reminderItem}
@@ -58,7 +60,8 @@ export default function UpcomingReminders({ jobs }: UpcomingRemindersProps) {
                 {job.role} at {job.company}
               </Text>
               <Text variant="label" color="secondary">
-                Follow up on {format(new Date(job.followUpDate!), 'MMM d, yyyy')}
+                Follow up on{" "}
+                {format(new Date(job.followUpDate!), "MMM d, yyyy")}
               </Text>
             </View>
           </TouchableOpacity>
@@ -80,17 +83,17 @@ const createStyles = (theme: any) =>
       marginBottom: 20,
     },
     header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
       marginBottom: 16,
     },
     viewAll: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
     },
     reminderItem: {
-      flexDirection: 'row',
+      flexDirection: "row",
       paddingVertical: 12,
       borderBottomWidth: 1,
       borderBottomColor: theme.border,
@@ -100,8 +103,8 @@ const createStyles = (theme: any) =>
       height: 36,
       borderRadius: 18,
       backgroundColor: theme.primaryLight,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       marginRight: 12,
     },
     reminderContent: {
@@ -109,10 +112,10 @@ const createStyles = (theme: any) =>
     },
     emptyState: {
       padding: 16,
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
     },
     emptyText: {
-      textAlign: 'center',
+      textAlign: "center",
     },
   });

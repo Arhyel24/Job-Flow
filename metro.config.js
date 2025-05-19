@@ -1,7 +1,15 @@
-const { getDefaultConfig } = require("expo/metro-config");
+const { getDefaultConfig } = require("@expo/metro-config");
 
-const config = getDefaultConfig(__dirname);
+const projectRoot = __dirname;
 
-config.resolver.unstable_enablePackageExports = false;
+const defaultConfig = getDefaultConfig(projectRoot);
 
-module.exports = config;
+module.exports = {
+  ...defaultConfig,
+  resolver: {
+    ...defaultConfig.resolver,
+    unstable_enablePackageExports: false,
+    drop_console: true,
+  },
+  projectRoot,
+};

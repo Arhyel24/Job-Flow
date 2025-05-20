@@ -1,9 +1,18 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import * as SecureStorage from "expo-secure-store";
-import * as AuthSession from "expo-auth-session";
-import getAccessToken from "../utils/token";
 import Toast from "react-native-toast-message";
 import * as WebBrowser from "expo-web-browser";
+import {
+  AuthRequestConfig,
+  DiscoveryDocument,
+  exchangeCodeAsync,
+  makeRedirectUri,
+  Prompt,
+  useAuthRequest,
+} from "expo-auth-session";
+import { Platform } from "react-native";
+import { BASE_URL, GOOGLE_CLIENT_ID } from "../utils/constants";
+import { tokenCache } from "../utils/cache";
 
 export type GoogleUser = {
   sub: string;
@@ -24,20 +33,26 @@ export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
 );
 
-const CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!;
-
 WebBrowser.maybeCompleteAuthSession();
 
-const discovery = {
-  authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
-  tokenEndpoint: "https://oauth2.googleapis.com/token",
-  revocationEndpoint: "https://oauth2.googleapis.com/revoke",
+const redirectUri = makeRedirectUri();
+
+const config: AuthRequestConfig = {
+  clientId: "google",
+  scopes: [
+    "openid",
+    "profile",
+    "email",
+    "https://www.googleapis.com/auth/drive.appdata",
+  ],
+  redirectUri: redirectUri,
+  prompt: Prompt.SelectAccount,
 };
 
-const redirectUri = AuthSession.makeRedirectUri({
-  scheme: "jobflow",
-  preferLocalhost: true,
-});
+const discovery: DiscoveryDocument = {
+  authorizationEndpoint: `${BASE_URL}/api/auth/authorize`,
+  tokenEndpoint: `${BASE_URL}/api/auth/token`,
+};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -45,39 +60,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<GoogleUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const isWeb = Platform.OS === "web";
 
-  const [request, response, promptAsync] = AuthSession.useAuthRequest(
-    {
-      clientId: CLIENT_ID,
-      scopes: [
-        "openid",
-        "profile",
-        "email",
-        "https://www.googleapis.com/auth/drive.appdata",
-      ],
-      redirectUri: redirectUri,
-    },
-    discovery
-  );
+  const [request, response, promptAsync] = useAuthRequest(config, discovery);
 
   useEffect(() => {
-    const loadUser = async () => {
+    const fetchUser = async () => {
       try {
-        const token = await getAccessToken();
-        const userJson = await SecureStorage.getItemAsync("user");
-
-        if (token && userJson) {
-          setAccessToken(token);
-          setUser(JSON.parse(userJson));
+        const userInfo = await SecureStorage.getItemAsync("user");
+        if (userInfo) {
+          setUser(JSON.parse(userInfo));
         }
       } catch (e) {
-        console.error("Failed to load user:", e);
+        console.error("Error loading user:", e);
       } finally {
         setLoading(false);
       }
     };
 
-    loadUser();
+    fetchUser();
   }, []);
 
   useEffect(() => {
@@ -87,27 +89,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         try {
           const { code } = response.params;
 
-          const tokenResult = await AuthSession.exchangeCodeAsync(
+          const tokenResult = await exchangeCodeAsync(
             {
-              clientId: CLIENT_ID,
+              clientId: GOOGLE_CLIENT_ID,
               code,
-              redirectUri: AuthSession.makeRedirectUri(),
+              redirectUri: redirectUri,
               extraParams: {
                 code_verifier: request?.codeVerifier!,
+                platform: Platform.OS,
               },
             },
             discovery
           );
 
-          const token = tokenResult.accessToken;
-          setAccessToken(token);
-          await SecureStorage.setItemAsync("access_token", token);
+          setAccessToken(tokenResult.accessToken);
+          setRefreshToken(tokenResult.refreshToken || null);
+          await tokenCache?.saveToken("access_token", tokenResult.accessToken);
+          await tokenCache?.saveToken(
+            "refresh_token",
+            tokenResult.refreshToken || ""
+          );
 
           const userInfoRes = await fetch(
             "https://www.googleapis.com/oauth2/v3/userinfo",
             {
               headers: {
-                Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${tokenResult.accessToken}`,
               },
             }
           );
@@ -129,22 +136,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const signIn = async () => {
     setLoading(true);
     try {
-      console.log("Redirect URI:", redirectUri);
-      await promptAsync();
+      if (!request) {
+        console.log("No request");
+        return;
+      }
+      await promptAsync({
+        presentationStyle: WebBrowser.WebBrowserPresentationStyle.AUTOMATIC,
+      });
     } catch (e) {
       if ((e as Error).message.includes("No matching browser activity")) {
-        // Fallback or show user-friendly message
         Toast.show({
           type: "error",
           text1: "Sign-in Error",
           text2:
             "No browser available to complete sign-in. Please install a browser app.",
-        });
-      } else {
-        Toast.show({
-          type: "error",
-          text1: "SignIn Error",
-          text2: (e as Error).message,
         });
       }
       console.error("Sign-in error:", e);
@@ -154,17 +159,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const signOut = async () => {
-    setLoading(true);
-    try {
-      setUser(null);
-      setAccessToken(null);
-      await SecureStorage.deleteItemAsync("access_token");
-      await SecureStorage.deleteItemAsync("user");
-    } catch (e) {
-      console.error("Sign-out error:", e);
-    } finally {
-      setLoading(false);
+    if (!isWeb) {
+      await tokenCache?.deleteToken("access_token");
+      await tokenCache?.deleteToken("refresh_token");
     }
+
+    setUser(null);
+    setAccessToken(null);
+    setRefreshToken(null);
   };
 
   return (

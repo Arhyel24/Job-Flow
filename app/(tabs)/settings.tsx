@@ -418,11 +418,15 @@ const createStyles = (theme: ThemeColors) =>
       fontSize: 14,
     },
     loadingContainer: {
-      flexDirection: "row",
+      flex: 1,
+      justifyContent: "center",
       alignItems: "center",
+      backgroundColor: theme.background,
+      padding: 20,
     },
     loadingText: {
-      marginLeft: 10,
+      marginTop: 12,
+      fontSize: 16,
       color: theme.text.secondary,
     },
     loginContainer: {

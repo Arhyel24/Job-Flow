@@ -71,7 +71,7 @@ export default function NewJobModal() {
       dateApplied: new Date().toISOString().substring(0, 10),
       status: "applied",
       url: "",
-      followUpDate: new Date().toISOString().substring(0, 10),
+      followUpDate: "",
       notes: "",
       contactPerson: "",
       contactEmail: "",
@@ -82,7 +82,7 @@ export default function NewJobModal() {
   const [showFollowUpDatePicker, setShowFollowUpDatePicker] = useState(false);
 
   const rawDateApplied = watch("dateApplied");
-  const rawFollowUpDateApplied = watch("dateApplied");
+  const rawFollowUpDate = watch("followUpDate");
 
   const dateAppliedValue = rawDateApplied
     ? new Date(rawDateApplied)
@@ -95,12 +95,12 @@ export default function NewJobModal() {
     }
   };
 
-  const followUpValue = rawFollowUpDateApplied && new Date(rawDateApplied);
+  const followUpValue = rawFollowUpDate ? new Date(rawFollowUpDate) : null;
 
   const onChangeFollowUpDate = (event: any, selectedDate?: Date) => {
     setShowFollowUpDatePicker(false);
     if (selectedDate) {
-      setValue("followUpDate", selectedDate.toDateString());
+      setValue("followUpDate", selectedDate.toISOString().substring(0, 10));
     }
   };
 
@@ -254,27 +254,40 @@ export default function NewJobModal() {
             />
           )}
         />
-        <Input
-          label="Follow-up  Date"
-          value={followUpValue ? format(followUpValue, "yyyy-MM-dd") : ""}
-          onPressIn={() => setShowFollowUpDatePicker(true)}
-          leftIcon={<Calendar size={20} color={theme.text.secondary} />}
-          showSoftInputOnFocus={false}
-          pointerEvents="none"
-        />
 
-        {showFollowUpDatePicker && (
-          <DateTimePicker
-            value={followUpValue || new Date()}
-            mode="date"
-            display="default"
-            onChange={onChangeFollowUpDate}
-            minimumDate={new Date()}
-            maximumDate={
-              new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-            }
+        <View>
+          <Input
+            label="Follow-up Date (Optional)"
+            value={followUpValue ? format(followUpValue, "yyyy-MM-dd") : ""}
+            onPressIn={() => setShowFollowUpDatePicker(true)}
+            leftIcon={<Calendar size={20} color={theme.text.secondary} />}
+            showSoftInputOnFocus={false}
+            pointerEvents="none"
           />
-        )}
+
+          {followUpValue && (
+            <Button
+              title="Clear Follow-up Date"
+              onPress={() => setValue("followUpDate", "")}
+              variant="outline"
+              style={{ marginTop: 8 }}
+            />
+          )}
+
+          {showFollowUpDatePicker && (
+            <DateTimePicker
+              value={followUpValue || new Date()}
+              mode="date"
+              display="default"
+              onChange={onChangeFollowUpDate}
+              minimumDate={new Date()}
+              maximumDate={
+                new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+              }
+            />
+          )}
+        </View>
+
         <Controller
           control={control}
           name="contactPerson"

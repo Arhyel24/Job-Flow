@@ -2,23 +2,30 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import * as SecureStorage from "expo-secure-store";
 import Toast from "react-native-toast-message";
 import * as WebBrowser from "expo-web-browser";
-import {
-  AuthRequestConfig,
-  DiscoveryDocument,
-  exchangeCodeAsync,
-  makeRedirectUri,
-  Prompt,
-  useAuthRequest,
-} from "expo-auth-session";
 import { Platform } from "react-native";
-import { BASE_URL, GOOGLE_CLIENT_ID } from "../utils/constants";
+import {
+  ACCESS_TOKEN_KEY,
+  GOOGLE_WEB_CLIENT_ID,
+  IOS_CLIENT_ID,
+} from "../utils/constants";
 import { tokenCache } from "../utils/cache";
+import {
+  GoogleSignin,
+  isErrorWithCode,
+  SignInResponse,
+  SignInSilentlyResponse,
+  SignInSuccessResponse,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
+import { set } from "zod";
 
 export type GoogleUser = {
-  sub: string;
-  name: string;
+  id: string;
+  name: string | null;
   email: string;
-  picture: string;
+  photo: string | null;
+  familyName: string | null;
+  givenName: string | null;
 };
 
 type AuthContextType = {
@@ -35,42 +42,20 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 
 WebBrowser.maybeCompleteAuthSession();
 
-const redirectUri = makeRedirectUri();
-
-const config: AuthRequestConfig = {
-  clientId: "google",
-  scopes: [
-    "openid",
-    "profile",
-    "email",
-    "https://www.googleapis.com/auth/drive.appdata",
-  ],
-  redirectUri: redirectUri,
-  prompt: Prompt.SelectAccount,
-};
-
-const discovery: DiscoveryDocument = {
-  authorizationEndpoint: `${BASE_URL}/api/auth/authorize`,
-  tokenEndpoint: `${BASE_URL}/api/auth/token`,
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<GoogleUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const isWeb = Platform.OS === "web";
-
-  const [request, response, promptAsync] = useAuthRequest(config, discovery);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const userInfo = await SecureStorage.getItemAsync("user");
+        const userInfo = await GoogleSignin.getCurrentUser();
         if (userInfo) {
-          setUser(JSON.parse(userInfo));
+          setUser(userInfo.user);
         }
       } catch (e) {
         console.error("Error loading user:", e);
@@ -82,91 +67,118 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     fetchUser();
   }, []);
 
-  useEffect(() => {
-    if (response?.type === "success") {
-      const handleAuth = async () => {
-        setLoading(true);
-        try {
-          const { code } = response.params;
-
-          const tokenResult = await exchangeCodeAsync(
-            {
-              clientId: GOOGLE_CLIENT_ID,
-              code,
-              redirectUri: redirectUri,
-              extraParams: {
-                code_verifier: request?.codeVerifier!,
-                platform: Platform.OS,
-              },
-            },
-            discovery
-          );
-
-          setAccessToken(tokenResult.accessToken);
-          setRefreshToken(tokenResult.refreshToken || null);
-          await tokenCache?.saveToken("access_token", tokenResult.accessToken);
-          await tokenCache?.saveToken(
-            "refresh_token",
-            tokenResult.refreshToken || ""
-          );
-
-          const userInfoRes = await fetch(
-            "https://www.googleapis.com/oauth2/v3/userinfo",
-            {
-              headers: {
-                Authorization: `Bearer ${tokenResult.accessToken}`,
-              },
-            }
-          );
-
-          const userInfo: GoogleUser = await userInfoRes.json();
-          setUser(userInfo);
-          await SecureStorage.setItemAsync("user", JSON.stringify(userInfo));
-        } catch (e) {
-          console.error("Auth Error:", e);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      handleAuth();
-    }
-  }, [response]);
-
   const signIn = async () => {
     setLoading(true);
     try {
-      if (!request) {
-        console.log("No request");
-        return;
-      }
-      await promptAsync({
-        presentationStyle: WebBrowser.WebBrowserPresentationStyle.AUTOMATIC,
+      GoogleSignin.configure({
+        webClientId: GOOGLE_WEB_CLIENT_ID,
+        iosClientId: IOS_CLIENT_ID,
+        profileImageSize: 150,
+        offlineAccess: false,
+        scopes: [
+          "profile",
+          "email",
+          "openid",
+          "https://www.googleapis.com/auth/drive.appdata",
+        ],
       });
-    } catch (e) {
-      if ((e as Error).message.includes("No matching browser activity")) {
-        Toast.show({
-          type: "error",
-          text1: "Sign-in Error",
-          text2:
-            "No browser available to complete sign-in. Please install a browser app.",
+
+      await GoogleSignin.hasPlayServices({
+        showPlayServicesUpdateDialog: true,
+      });
+
+      let userInfo: GoogleUser;
+
+      try {
+        const silentResponse = await GoogleSignin.signInSilently();
+
+        if (silentResponse.type === "noSavedCredentialFound") {
+          const explitResponse =
+            (await GoogleSignin.signIn()) as SignInResponse;
+
+          userInfo = explitResponse.data?.user as GoogleUser;
+        } else {
+          userInfo = silentResponse.data.user as GoogleUser;
+        }
+      } catch (error) {
+        throw new Error((error as Error).message, {
+          cause: "Google sign in configuration",
         });
       }
-      console.error("Sign-in error:", e);
+
+      setUser(userInfo);
+
+      const { accessToken } = await GoogleSignin.getTokens();
+
+      if (accessToken) {
+        setAccessToken(accessToken);
+        await tokenCache?.saveToken(ACCESS_TOKEN_KEY, accessToken);
+      }
+
+      Toast.show({
+        type: "success",
+        text1: "Sign in Successful",
+        text2: "Google sign-in completed!",
+      });
+    } catch (error) {
+      if (isErrorWithCode(error)) {
+        switch (error.code) {
+          case statusCodes.SIGN_IN_REQUIRED:
+            Toast.show({
+              type: "error",
+              text1: "Sign In Required",
+              text2: "Please sign in to continue.",
+            });
+            break;
+          case statusCodes.IN_PROGRESS:
+            Toast.show({
+              type: "error",
+              text1: "Sign In Progress",
+              text2: "Please wait for sign-in to complete.",
+            });
+            break;
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            Toast.show({
+              type: "error",
+              text1: "Play Services Error",
+              text2: "Google Play Services not available or outdated.",
+            });
+            break;
+          case statusCodes.SIGN_IN_CANCELLED:
+            Toast.show({
+              type: "info",
+              text1: "Cancelled",
+              text2: "Sign-in was cancelled.",
+            });
+            break;
+          default:
+            Toast.show({
+              type: "error",
+              text1: "Sign In Error",
+              text2: error.message || "An unknown error occurred.",
+            });
+        }
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: (error as Error).message || "Unexpected error occurred.",
+        });
+      }
+
+      console.error("Sign-in error:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const signOut = async () => {
-    if (!isWeb) {
-      await tokenCache?.deleteToken("access_token");
-      await tokenCache?.deleteToken("refresh_token");
-    }
+    await GoogleSignin.signOut();
+    await GoogleSignin.revokeAccess();
+    await tokenCache?.deleteToken("access_token");
 
     setUser(null);
     setAccessToken(null);
-    setRefreshToken(null);
   };
 
   return (

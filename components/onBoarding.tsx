@@ -6,16 +6,11 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-import { useRouter } from "expo-router";
 import { FileText, CheckCircle2, Timer } from "lucide-react-native";
-import Text from "../../components/ui/Text";
-import Button from "../../components/ui/Button";
-import {
-  lightThemeColors as colors,
-  ThemeColors,
-} from "../../constants/colors";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useTheme } from "../../context/themeContext";
+import Text from "./ui/Text";
+import { lightThemeColors as colors, ThemeColors } from "../constants/colors";
+import { useTheme } from "../context/themeContext";
+import Button from "./ui/Button";
 
 const { width } = Dimensions.get("window");
 
@@ -42,18 +37,9 @@ const slides = [
   },
 ];
 
-const completeOnboarding = async () => {
-  try {
-    await AsyncStorage.setItem("@onboarding_completed", "true");
-  } catch (error) {
-    console.error("Error saving onboarding status:", error);
-  }
-};
-
-export default function Onboarding() {
+export default function Onboarding({ onComplete }: { onComplete: () => Promise<void> }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
-  const router = useRouter();
   const { theme } = useTheme();
   const styles = createStyles(theme);
 
@@ -77,8 +63,7 @@ export default function Onboarding() {
       });
       setCurrentIndex(currentIndex + 1);
     } else {
-      await completeOnboarding();
-      router.replace("/(tabs)/jobs");
+      await onComplete();
     }
   };
 
@@ -118,7 +103,7 @@ export default function Onboarding() {
 
         {currentIndex < slides.length - 1 && (
           <TouchableOpacity
-            onPress={() => router.replace("/(tabs)/jobs")}
+            onPress={onComplete}
             style={styles.skipButton}
           >
             <Text color="secondary">Skip</Text>

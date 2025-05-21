@@ -28,7 +28,7 @@ export default function UpcomingReminders({ jobs }: UpcomingRemindersProps) {
     .slice(0, 3);
 
   const handleViewAll = () => {
-    router.push("/(tabs)/jobs");
+    router.push("/(tabs)");
   };
 
   return (

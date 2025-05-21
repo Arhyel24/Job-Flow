@@ -19,12 +19,12 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import * as SystemUI from "expo-system-ui";
 import { JobsProvider } from "../context/jobContext";
 import { DocumentProvider } from "../context/documentContext";
+import { NotificationProvider } from "../context/NotificationContext";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [appReady, setAppReady] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
   const [fontsLoaded, fontError] = useFonts({
     "Inter-Regular": Inter_400Regular,
     "Inter-Medium": Inter_500Medium,
@@ -34,25 +34,13 @@ export default function RootLayout() {
   useFrameworkReady();
 
   useEffect(() => {
-    const checkOnboardingStatus = async () => {
-      try {
-        const value = await AsyncStorage.getItem("@onboarding_completed");
-        setShowOnboarding(value !== "true");
-      } catch (error) {
-        console.error("Error checking onboarding:", error);
-        setShowOnboarding(true);
-      } finally {
-        setAppReady(true);
-        SplashScreen.hideAsync();
-      }
-    };
-
     if (fontsLoaded || fontError) {
-      checkOnboardingStatus();
+      setAppReady(true);
+      SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
 
-  if (!appReady || showOnboarding === null) {
+  if (!appReady) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
@@ -66,13 +54,9 @@ export default function RootLayout() {
         <ThemeProvider>
           <JobsProvider>
             <DocumentProvider>
-              {showOnboarding ? (
-                <Stack screenOptions={{ headerShown: false }}>
-                  <Stack.Screen name="onboarding" />
-                </Stack>
-              ) : (
+              <NotificationProvider>
                 <AppInitializer />
-              )}
+              </NotificationProvider>
             </DocumentProvider>
           </JobsProvider>
           <ThemedToast />

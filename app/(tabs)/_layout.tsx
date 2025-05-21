@@ -1,14 +1,41 @@
 import { Redirect, Tabs } from "expo-router";
-import { Platform, StyleSheet } from "react-native";
+import { useEffect, useState } from "react";
+import { Modal, Platform, StyleSheet } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Home, Briefcase, FileText, Settings } from "lucide-react-native";
 import { useTheme } from "../../context/themeContext";
-import { useAuth } from "../../context/authContext";
 import { ThemeColors } from "../../constants/colors";
 import { StatusBar } from "expo-status-bar";
+import Onboarding from "../../components/onBoarding";
 
 export default function TabLayout() {
   const { theme, isDarkMode } = useTheme();
   const styles = createStyles(theme);
+
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      try {
+        const value = await AsyncStorage.getItem("@onboarding_completed");
+        setShowOnboarding(value !== "true");
+      } catch (error) {
+        console.error("Error checking onboarding:", error);
+        setShowOnboarding(true);
+      }
+    };
+
+    checkOnboardingStatus();
+  }, []);
+
+  const completeOnboarding = async () => {
+    try {
+      await AsyncStorage.setItem("@onboarding_completed", "true");
+      setShowOnboarding(false);
+    } catch (error) {
+      console.error("Error saving onboarding status:", error);
+    }
+  };
 
   return (
     <>
@@ -16,6 +43,7 @@ export default function TabLayout() {
         backgroundColor={theme.background}
         style={isDarkMode ? "light" : "dark"}
       />
+
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: theme.primary,
@@ -24,19 +52,21 @@ export default function TabLayout() {
           tabBarLabelStyle: styles.tabBarLabel,
           headerShown: false,
           tabBarShowLabel: true,
+          animation: "shift",
         }}
+        initialRouteName="jobs"
       >
         <Tabs.Screen
           name="index"
           options={{
-            title: "Dashboard",
+            title: "Applications",
             tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
           }}
         />
         <Tabs.Screen
-          name="jobs"
+          name="dashboard"
           options={{
-            title: "Applications",
+            title: "Dashboard",
             tabBarIcon: ({ color, size }) => (
               <Briefcase color={color} size={size} />
             ),
@@ -61,6 +91,15 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
+
+      <Modal
+        animationType="slide"
+        presentationStyle="fullScreen"
+        visible={showOnboarding}
+        onRequestClose={completeOnboarding}
+      >
+        <Onboarding onComplete={completeOnboarding} />
+      </Modal>
     </>
   );
 }

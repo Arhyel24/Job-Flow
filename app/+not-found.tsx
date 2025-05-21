@@ -58,7 +58,7 @@ export default function NotFoundScreen() {
         </Animated.View>
 
         <Animated.View style={{ opacity: fadeValue }}>
-          <Link href="/(tabs)/jobs" asChild>
+          <Link href="/(tabs)" asChild>
             <Animated.View
               style={styles.link}
               onStartShouldSetResponder={() => true}
@@ -79,7 +79,7 @@ export default function NotFoundScreen() {
             >
               <Text
                 style={styles.linkText}
-                onPress={() => router.push("/(tabs)/jobs")}
+                onPress={() => router.push("/(tabs)")}
               >
                 <Feather name="home" size={16} color={theme.primary} /> Go to
                 home screen!

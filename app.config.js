@@ -79,7 +79,7 @@ export default {
     },
     web: {
       bundler: "metro",
-      output: "server",
+      output: "static",
       favicon: "./assets/icons/adaptive-icon.png",
     },
     plugins: [
@@ -113,6 +113,13 @@ export default {
           color: "#ffffff",
         },
       ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          iosUrlScheme:
+            "com.googleusercontent.apps.48569113184-jb8ju9fcu8f61qkj0arnc98l2dfi7d0b",
+        },
+      ],
     ],
     experiments: {
       typedRoutes: true,
@@ -128,5 +135,3 @@ export default {
     scheme: "jobflow",
   },
 };
-
-// keytool -list -v -alias androiddebugkey -keystore %USERPROFILE%\.android\debug.keystore -storepass android -keypass android

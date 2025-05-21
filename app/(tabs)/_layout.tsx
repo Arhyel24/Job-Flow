@@ -54,15 +54,8 @@ export default function TabLayout() {
           tabBarShowLabel: true,
           animation: "shift",
         }}
-        initialRouteName="jobs"
+        initialRouteName="index"
       >
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: "Applications",
-            tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
-          }}
-        />
         <Tabs.Screen
           name="dashboard"
           options={{
@@ -70,6 +63,13 @@ export default function TabLayout() {
             tabBarIcon: ({ color, size }) => (
               <Briefcase color={color} size={size} />
             ),
+          }}
+        />
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: "Applications",
+            tabBarIcon: ({ color, size }) => <Home color={color} size={size} />,
           }}
         />
         <Tabs.Screen

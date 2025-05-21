@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import * as SecureStorage from "expo-secure-store";
 import Toast from "react-native-toast-message";
 import * as WebBrowser from "expo-web-browser";
 import { Platform } from "react-native";
@@ -13,11 +12,8 @@ import {
   GoogleSignin,
   isErrorWithCode,
   SignInResponse,
-  SignInSilentlyResponse,
-  SignInSuccessResponse,
   statusCodes,
 } from "@react-native-google-signin/google-signin";
-import { set } from "zod";
 
 export type GoogleUser = {
   id: string;

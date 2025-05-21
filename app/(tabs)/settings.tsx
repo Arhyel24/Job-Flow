@@ -104,7 +104,14 @@ export default function SettingsScreen() {
               </View>
             ) : user ? (
               <>
-                <Image source={{ uri: user.picture }} style={styles.avatar} />
+                <Image
+                  source={{
+                    uri:
+                      user.photo ||
+                      "https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg",
+                  }}
+                  style={styles.avatar}
+                />
                 <View style={styles.profileInfo}>
                   <Text variant="h3" weight="bold" style={styles.name}>
                     {user.name}
